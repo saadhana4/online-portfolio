@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { deskObjects } from '../data/deskObjects';
 import { getHeroYPercent, getObjectTransform } from '../data/driftKeyframes';
 import { HeroLine, type HeroWord } from './HeroLine';
-import { DoodleCompanion } from './DoodleCompanion';
 
 interface Spark {
   id: number;
@@ -325,9 +324,9 @@ export const DeskHome: React.FC = () => {
 
   // Pointerdown handler for Click Spark burst
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Skip if clicking on interactive elements like nav, mascot, links, buttons
+    // Skip if clicking on interactive elements like nav, links, buttons
     const target = e.target as HTMLElement | null;
-    if (target && target.closest('a, button, nav, .desk-doodle-container, input, select, textarea')) {
+    if (target && target.closest('a, button, nav, input, select, textarea')) {
       return;
     }
 
@@ -398,9 +397,6 @@ export const DeskHome: React.FC = () => {
           );
         })}
       </div>
-
-      {/* Bottom-left Doodle mascot */}
-      <DoodleCompanion />
 
       {/* Handwritten scroll hint with doodle arrow */}
       <div
