@@ -13,7 +13,6 @@ export interface ObjectKeyframes {
   p65: KeyframePosition;
   p85: KeyframePosition;
   p1: KeyframePosition;
-  // Optional mobile overrides for keyframes
   mobileP0?: KeyframePosition;
   mobileP28?: KeyframePosition;
   mobileP45?: KeyframePosition;
@@ -162,12 +161,52 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p85: { x: 50, y: 36, rot: -28 },
     p1: { x: 54, y: 65, rot: -3 },
     mobileP0: { x: 50, y: 79, rot: -2 },
-    mobileP28: { x: 92, y: -6, rot: 35 }, // off-screen top right
+    mobileP28: { x: 92, y: -6, rot: 35 },
     mobileP45: { x: 88, y: -4, rot: -15 },
     mobileP65: { x: 50, y: 82, rot: 26 },
     mobileP85: { x: 50, y: 36, rot: -28 },
     mobileP1: { x: 50, y: 79, rot: -2 },
   },
+};
+
+/**
+ * 2) AWAY LAYOUT (Every object cropped by screen edge; center stays clear)
+ * notebook (14,-3) rot -22 | tape roll (31,0) rot 15 | headphones (47,-5) rot 10 |
+ * webcam (63,-1) rot -12 | laptop (80,-8) rot 8 | sticky notes (93,3) rot 20 |
+ * plant (-1,60) rot 0 | ruler (14,105) rot -30 | coffee cup (33,103) rot 12 |
+ * SD cards (52,106) rot -8 | scissors (72,102) rot 25 | pencil (90,106) rot 60
+ */
+export const AWAY_LAYOUT: Record<string, KeyframePosition> = {
+  notebook: { x: 14, y: -3, rot: -22 },
+  'tape-roll': { x: 31, y: 0, rot: 15 },
+  headphones: { x: 47, y: -5, rot: 10 },
+  webcam: { x: 63, y: -1, rot: -12 },
+  laptop: { x: 80, y: -8, rot: 8 },
+  'sticky-notes': { x: 93, y: 3, rot: 20 },
+  plant: { x: -1, y: 60, rot: 0 },
+  ruler: { x: 14, y: 105, rot: -30 },
+  'coffee-cup': { x: 33, y: 103, rot: 12 },
+  'sd-cards': { x: 52, y: 106, rot: -8 },
+  scissors: { x: 72, y: 102, rot: 25 },
+  pencil: { x: 90, y: 106, rot: 60 },
+};
+
+/**
+ * Stable per-object stagger of 0 to 120ms (different per object)
+ */
+export const OBJECT_STAGGERS: Record<string, number> = {
+  notebook: 0,
+  pencil: 80,
+  webcam: 40,
+  headphones: 100,
+  'sticky-notes': 30,
+  'tape-roll': 70,
+  plant: 110,
+  ruler: 20,
+  'coffee-cup': 90,
+  scissors: 50,
+  'sd-cards': 120,
+  laptop: 60,
 };
 
 /**
@@ -178,10 +217,45 @@ export function cubicEaseInOut(t: number): number {
 }
 
 /**
+ * Evaluates cubic-bezier(0.65, 0, 0.35, 1) using Newton-Raphson solver
+ */
+export function cubicBezierEase(x: number): number {
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+
+  const x1 = 0.65;
+  const x2 = 0.35;
+  const y1 = 0.0;
+  const y2 = 1.0;
+
+  let t = x;
+  for (let i = 0; i < 6; i++) {
+    const oneMinusT = 1 - t;
+    const currentX =
+      3 * oneMinusT * oneMinusT * t * x1 +
+      3 * oneMinusT * t * t * x2 +
+      t * t * t;
+    const currentDx =
+      3 * oneMinusT * oneMinusT * x1 +
+      6 * oneMinusT * t * (x2 - x1) +
+      3 * t * t * (1 - x2);
+    if (Math.abs(currentDx) < 1e-6) break;
+    t -= (currentX - x) / currentDx;
+    t = Math.max(0, Math.min(1, t));
+  }
+
+  const oneMinusT = 1 - t;
+  return (
+    3 * oneMinusT * oneMinusT * t * y1 +
+    3 * oneMinusT * t * t * y2 +
+    t * t * t
+  );
+}
+
+/**
  * Interpolate hero y% at progress p
  */
 export function getHeroYPercent(p: number): number {
-  // Clamp or wrap p into [0, 1)
   let normalizedP = p % 1;
   if (normalizedP < 0) normalizedP += 1;
 
@@ -212,11 +286,9 @@ export function getObjectTransform(
     return { x: 50, y: 50, rot: 0 };
   }
 
-  // Shift progress by object's personal delay
   let p = (progress - kf.delay) % 1;
   if (p < 0) p += 1;
 
-  // Retrieve position keys based on mobile flag
   const getPos = (index: number): KeyframePosition => {
     if (isMobile) {
       switch (index) {
@@ -253,7 +325,6 @@ export function getObjectTransform(
       let y = start.y + (end.y - start.y) * easedT;
       const rot = start.rot + (end.rot - start.rot) * easedT;
 
-      // On mobile, ensure visible objects never cover top-right menu button (x > 62%, y < 15%)
       if (isMobile && y > 0 && y < 15 && x > 62) {
         y = 16;
       }
@@ -263,4 +334,44 @@ export function getObjectTransform(
   }
 
   return getPos(0);
+}
+
+/**
+ * Blends home position with away layout position
+ * a in [0, 1] (0 = home, 1 = away)
+ */
+export function getBlendedObjectTransform(
+  id: string,
+  homeP: number,
+  globalA: number,
+  isMobile: boolean,
+  isEnteringAway: boolean
+): KeyframePosition {
+  const homePos = getObjectTransform(id, homeP, isMobile);
+  const awayPos = AWAY_LAYOUT[id] || homePos;
+
+  if (globalA <= 0) return homePos;
+  if (globalA >= 1) return awayPos;
+
+  // Stagger calculation: 0 to 120ms of 900ms duration
+  const staggerMs = OBJECT_STAGGERS[id] ?? 0;
+  const staggerNorm = staggerMs / 900;
+  const activeWindow = (900 - 120) / 900; // ~0.867
+
+  let localA: number;
+  if (isEnteringAway) {
+    const normalizedTime = Math.max(0, Math.min(1, (globalA - staggerNorm) / activeWindow));
+    localA = cubicBezierEase(normalizedTime);
+  } else {
+    // When returning to home, reverse progress (1 - globalA) drives the return
+    const reverseTime = 1 - globalA;
+    const normalizedTime = Math.max(0, Math.min(1, (reverseTime - staggerNorm) / activeWindow));
+    localA = 1 - cubicBezierEase(normalizedTime);
+  }
+
+  const x = homePos.x + (awayPos.x - homePos.x) * localA;
+  const y = homePos.y + (awayPos.y - homePos.y) * localA;
+  const rot = homePos.rot + (awayPos.rot - homePos.rot) * localA;
+
+  return { x, y, rot };
 }

@@ -3,9 +3,10 @@ import React, { useState, useEffect, useRef } from 'react';
 interface HeaderProps {
   currentRoute: string;
   onNavigate: (route: string) => void;
+  onBeginDrift?: (target: 'home' | 'away') => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate }) => {
+export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate, onBeginDrift }) => {
   const [isHitting, setIsHitting] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
@@ -54,11 +55,34 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate }) => {
       return;
     }
 
+    // 3) Work click sequence: hammer winds up and strikes.
+    // At impact (~280ms) begin drift; at ~330ms set route to #/work.
     setIsHitting(true);
+
+    setTimeout(() => {
+      onBeginDrift?.('away');
+    }, 280);
+
+    setTimeout(() => {
+      onNavigate('work');
+    }, 330);
+
     setTimeout(() => {
       setIsHitting(false);
-      onNavigate('work');
     }, 750);
+  };
+
+  const handleJourneyClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setIsMenuOpen(false);
+    onBeginDrift?.('away');
+    onNavigate('journey');
+  };
+
+  const handleBackClick = () => {
+    setIsMenuOpen(false);
+    onBeginDrift?.('home');
+    onNavigate('');
   };
 
   const handleLinkClick = (route: string) => {
@@ -75,7 +99,7 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate }) => {
           className="brand-signature font-handwriting"
           onClick={(e) => {
             e.preventDefault();
-            handleLinkClick('');
+            handleBackClick();
           }}
           aria-label="Saadhana Karthikeyan - Return to Desk home"
         >
@@ -87,6 +111,38 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate }) => {
       <nav className="header-nav" aria-label="Main Navigation" ref={menuRef}>
         {/* Mobile / Tablet Collapsible Menu (< 1000px) */}
         <div className="mobile-nav-container">
+          {/* Back pill on mobile: shown outside the menu next to Menu pill */}
+          {isInnerPage && (
+            <div className="back-pill-wrapper mobile-back-wrapper">
+              <a
+                href="#/"
+                className="pill-btn nav-pill back-pill"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleBackClick();
+                }}
+                aria-label="Back to home"
+              >
+                <svg
+                  className="back-icon-svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M9 14 L4 9 L9 4" />
+                  <path d="M5 9 C11 8, 17 9, 18 13 C19 16, 17 20, 13 20 C10 20, 8 18, 8 16" />
+                </svg>
+                <span>Back</span>
+              </a>
+            </div>
+          )}
+
           <button
             type="button"
             className="pill-btn nav-pill menu-toggle-btn"
@@ -123,24 +179,6 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate }) => {
           {/* Vertical Drawer for under 1000px */}
           {isMenuOpen && (
             <div id="mobile-nav-menu" className="mobile-menu-drawer" role="menu">
-              {isInnerPage && (
-                <a
-                  href="#/"
-                  role="menuitem"
-                  className="pill-btn nav-pill"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleLinkClick('');
-                  }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="19" y1="12" x2="5" y2="12" />
-                    <polyline points="12 19 5 12 12 5" />
-                  </svg>
-                  <span>Desk</span>
-                </a>
-              )}
-
               <a
                 href="#/work"
                 role="menuitem"
@@ -161,10 +199,7 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate }) => {
                 href="#/journey"
                 role="menuitem"
                 className={`pill-btn nav-pill ${currentRoute === 'journey' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('journey');
-                }}
+                onClick={handleJourneyClick}
               >
                 <svg className="compass-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <circle cx="12" cy="12" r="10" />
@@ -213,22 +248,56 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate }) => {
 
         {/* Desktop Navigation: exact 8px gap, top: 26px, right: 28px */}
         <div className="nav-pills-row nav-pills-desktop">
+          {/* 5) BACK PILL: FIRST pill in nav, left of Work */}
           {isInnerPage && (
-            <a
-              href="#/"
-              className="pill-btn nav-pill back-pill"
-              onClick={(e) => {
-                e.preventDefault();
-                handleLinkClick('');
-              }}
-              aria-label="Return to Desk view"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="19" y1="12" x2="5" y2="12" />
-                <polyline points="12 19 5 12 12 5" />
-              </svg>
-              <span>Desk</span>
-            </a>
+            <div className="back-pill-wrapper">
+              <a
+                href="#/"
+                className="pill-btn nav-pill back-pill"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleBackClick();
+                }}
+                aria-label="Back to home"
+              >
+                {/* Hand-drawn arrow that draws itself out to the left on hover/focus */}
+                <svg
+                  className="back-pill-draw-arrow-svg"
+                  width="120"
+                  height="28"
+                  viewBox="0 0 120 28"
+                  fill="none"
+                  stroke="var(--base-400)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M 115 14 C 95 9, 70 18, 45 13 C 32 10, 20 14, 12 14 M 22 8 L 12 14 L 22 20"
+                    pathLength="100"
+                  />
+                </svg>
+
+                {/* Hand-drawn looped arrow pointing left */}
+                <svg
+                  className="back-icon-svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M9 14 L4 9 L9 4" />
+                  <path d="M5 9 C11 8, 17 9, 18 13 C19 16, 17 20, 13 20 C10 20, 8 18, 8 16" />
+                </svg>
+                <span>Back</span>
+              </a>
+            </div>
           )}
 
           {/* Work Pill */}
@@ -265,10 +334,7 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate }) => {
           <a
             href="#/journey"
             className={`pill-btn nav-pill journey-pill ${currentRoute === 'journey' ? 'active' : ''}`}
-            onClick={(e) => {
-              e.preventDefault();
-              handleLinkClick('journey');
-            }}
+            onClick={handleJourneyClick}
             aria-current={currentRoute === 'journey' ? 'page' : undefined}
           >
             <svg className="compass-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

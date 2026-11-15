@@ -1,6 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { deskObjects } from '../data/deskObjects';
-import { getHeroYPercent, getObjectTransform } from '../data/driftKeyframes';
+import {
+  getHeroYPercent,
+  getBlendedObjectTransform,
+  AWAY_LAYOUT,
+} from '../data/driftKeyframes';
 import { HeroLine, type HeroWord } from './HeroLine';
 
 interface Spark {
@@ -10,7 +14,15 @@ interface Spark {
   rotation: number;
 }
 
-export const DeskHome: React.FC = () => {
+interface DeskHomeProps {
+  currentRoute: string;
+  isDriftingAwayTrigger?: boolean;
+}
+
+export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAwayTrigger = false }) => {
+  const isAwayRoute = currentRoute === 'work' || currentRoute === 'journey';
+  const shouldBeAway = isAwayRoute || isDriftingAwayTrigger;
+
   const [isMobile, setIsMobile] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth < 700;
@@ -22,12 +34,26 @@ export const DeskHome: React.FC = () => {
   const [hasInteracted, setHasInteracted] = useState<boolean>(false);
   const [sparks, setSparks] = useState<Spark[]>([]);
 
+  // Hero line visibility states for fade-out and fade-in
+  const [heroIsAway, setHeroIsAway] = useState<boolean>(shouldBeAway);
+  const [heroIsFadingIn, setHeroIsFadingIn] = useState<boolean>(false);
+  const heroIsAwayRef = useRef<boolean>(shouldBeAway);
+  const heroIsFadingInRef = useRef<boolean>(false);
+
   const stageRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const objectRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  // Scroll progress p in [0, 1)
   const targetRef = useRef<number>(0);
   const currentRef = useRef<number>(0);
+
+  // Blend value a in [0, 1] (0 = home, 1 = away)
+  const blendARef = useRef<number>(shouldBeAway ? 1 : 0);
+  const targetARef = useRef<number>(shouldBeAway ? 1 : 0);
+  const isEnteringAwayRef = useRef<boolean>(shouldBeAway);
+  const blendStartTimeRef = useRef<number>(0);
+
   const isLoopRunningRef = useRef<boolean>(false);
   const rAFIdRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number>(0);
@@ -41,46 +67,39 @@ export const DeskHome: React.FC = () => {
     height: 642,
   });
 
-  // Setup loop, resize and input event listeners
-  useEffect(() => {
-    // Check reduced motion
-    const checkMotion = () => {
-      const reduced = typeof window !== 'undefined' && window.matchMedia
-        ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        : false;
-      reducedMotionRef.current = reduced;
-      return reduced;
-    };
-    const isReduced = checkMotion();
+  // Toggle will-change on animated elements
+  const setWillChange = (active: boolean) => {
+    const val = active ? 'transform' : 'auto';
+    if (heroRef.current) {
+      heroRef.current.style.willChange = val;
+    }
+    for (const id in objectRefs.current) {
+      const el = objectRefs.current[id];
+      if (el) el.style.willChange = val;
+    }
+  };
 
-    // Toggle will-change on animated elements
-    const setWillChange = (active: boolean) => {
-      const val = active ? 'transform' : 'auto';
-      if (heroRef.current) {
-        heroRef.current.style.willChange = val;
-      }
-      for (const id in objectRefs.current) {
-        const el = objectRefs.current[id];
-        if (el) el.style.willChange = val;
-      }
-    };
+  // Render frame given progress p and blend value a
+  const renderFrame = useCallback((p: number, a: number, isEnteringAway: boolean) => {
+    let normP = p % 1;
+    if (normP < 0) normP += 1;
 
-    // Render a single frame at progress p
-    const renderFrame = (p: number) => {
-      let normP = p % 1;
-      if (normP < 0) normP += 1;
+    const { width, height } = cachedStageSize.current;
+    const isMob = isMobileRef.current;
 
-      const { width, height } = cachedStageSize.current;
-      const isMob = isMobileRef.current;
-
-      // 1. Move Hero line with translateY driven by interpolated y%
-      if (heroRef.current) {
+    // 1. Hero line translateY
+    if (heroRef.current) {
+      if (a < 0.01 && !heroIsFadingInRef.current && !heroIsAwayRef.current) {
         const heroYPercent = getHeroYPercent(normP);
         const heroYPx = (heroYPercent / 100) * height;
         heroRef.current.style.transform = `translate3d(-50%, ${heroYPx}px, 0) translateY(-50%)`;
+      } else {
+        heroRef.current.style.transform = '';
       }
+    }
 
-      // 2. Update scroll-driven word: sees [0, 0.22), cares [0.22, 0.62), maps [0.62, 1)
+    // 2. Scroll-driven word (only while in home mode)
+    if (a < 0.5) {
       let nextWord: HeroWord = 'sees';
       if (normP >= 0.62) {
         nextWord = 'maps';
@@ -94,82 +113,205 @@ export const DeskHome: React.FC = () => {
         activeWordRef.current = nextWord;
         setCurrentWord(nextWord);
       }
+    }
 
-      // 3. Update Desk Objects (transforms only)
-      for (const obj of deskObjects) {
-        if (isMob && !obj.showOnMobile) continue;
+    // 3. Desk Objects (blended transforms)
+    for (const obj of deskObjects) {
+      if (isMob && !obj.showOnMobile) continue;
 
-        const el = objectRefs.current[obj.id];
-        if (!el) continue;
+      const el = objectRefs.current[obj.id];
+      if (!el) continue;
 
-        const pos = getObjectTransform(obj.id, normP, isMob);
-        const xPx = (pos.x / 100) * width;
-        const yPx = (pos.y / 100) * height;
+      const pos = getBlendedObjectTransform(obj.id, normP, a, isMob, isEnteringAway);
+      const xPx = (pos.x / 100) * width;
+      const yPx = (pos.y / 100) * height;
 
-        el.style.transform = `translate3d(${xPx}px, ${yPx}px, 0) translate(-50%, -50%) rotate(${pos.rot}deg)`;
-      }
-    };
+      el.style.transform = `translate3d(${xPx}px, ${yPx}px, 0) translate(-50%, -50%) rotate(${pos.rot}deg)`;
+    }
+  }, []);
 
-    // Main RAF tick loop
-    const tick = (now: number) => {
+  // Main RAF tick loop: handles both scroll progress p easing AND blend a tweening
+  const tick = useCallback(
+    function tickFn(now: number) {
       if (!lastTimeRef.current) lastTimeRef.current = now;
       let dt = (now - lastTimeRef.current) / 1000;
       lastTimeRef.current = now;
-      if (dt > 0.1) dt = 0.1; // clamp against giant steps on resume
+      if (dt > 0.1) dt = 0.1;
 
-      let target = targetRef.current;
-      let current = currentRef.current;
+      let targetP = targetRef.current;
+      let currentP = currentRef.current;
+      const targetA = targetARef.current;
+      let currentA = blendARef.current;
 
-      // Frame-rate independent easing: current += (target - current) * (1 - Math.exp(-dt * 6))
-      current += (target - current) * (1 - Math.exp(-dt * 6));
+      let needsAnotherLoop = false;
 
-      // Seamless loop wrapping: when target passes 1 (or goes below 0),
-      // subtract (or add) 1 from BOTH target and current
-      while (target >= 1) {
-        target -= 1;
-        current -= 1;
+      // A) Blend value a tweening (900ms duration)
+      if (Math.abs(targetA - currentA) > 0.001) {
+        needsAnotherLoop = true;
+        const elapsed = now - blendStartTimeRef.current;
+        const normT = Math.max(0, Math.min(1, elapsed / 900));
+
+        if (targetA === 1) {
+          // Drifting to away
+          currentA = normT;
+          if (normT >= 1) currentA = 1;
+        } else {
+          // Drifting back to home
+          currentA = 1 - normT;
+          if (normT >= 1) currentA = 0;
+        }
+        blendARef.current = currentA;
+      } else {
+        blendARef.current = targetA;
+        currentA = targetA;
       }
-      while (target < 0) {
-        target += 1;
-        current += 1;
+
+      // B) Scroll progress p easing (only when near home a < 0.05)
+      if (currentA < 0.05) {
+        currentP += (targetP - currentP) * (1 - Math.exp(-dt * 6));
+
+        while (targetP >= 1) {
+          targetP -= 1;
+          currentP -= 1;
+        }
+        while (targetP < 0) {
+          targetP += 1;
+          currentP += 1;
+        }
+
+        targetRef.current = targetP;
+        currentRef.current = currentP;
+
+        if (Math.abs(targetP - currentP) > 0.0005) {
+          needsAnotherLoop = true;
+        } else {
+          currentRef.current = targetP;
+        }
       }
 
-      targetRef.current = target;
-      currentRef.current = current;
+      renderFrame(currentRef.current, currentA, isEnteringAwayRef.current);
 
-      renderFrame(current);
-
-      // Stop loop when |target - current| <= 0.0005
-      if (Math.abs(target - current) <= 0.0005) {
-        currentRef.current = target;
-        renderFrame(target);
+      if (needsAnotherLoop) {
+        rAFIdRef.current = requestAnimationFrame(tickFn);
+      } else {
         isLoopRunningRef.current = false;
         setWillChange(false);
         rAFIdRef.current = null;
+      }
+    },
+    [renderFrame]
+  );
+
+  const startLoop = useCallback(() => {
+    if (reducedMotionRef.current) return;
+    if (!isLoopRunningRef.current) {
+      isLoopRunningRef.current = true;
+      setWillChange(true);
+      lastTimeRef.current = performance.now();
+      rAFIdRef.current = requestAnimationFrame(tick);
+    }
+  }, [tick]);
+
+  const isFirstMountRef = useRef<boolean>(true);
+
+  // Handle route and mode transitions (home <-> away)
+  useEffect(() => {
+    const isReduced = reducedMotionRef.current;
+
+    if (isFirstMountRef.current) {
+      isFirstMountRef.current = false;
+      if (shouldBeAway) {
+        blendARef.current = 1;
+        targetARef.current = 1;
+        heroIsAwayRef.current = true;
+        heroIsFadingInRef.current = false;
+        renderFrame(0, 1, true);
+        return;
+      }
+    }
+
+    if (shouldBeAway) {
+      // Transition to away
+      targetARef.current = 1;
+      isEnteringAwayRef.current = true;
+      blendStartTimeRef.current = performance.now();
+
+      if (isReduced) {
+        blendARef.current = 1;
+        heroIsAwayRef.current = true;
+        setHeroIsAway(true);
+        heroIsFadingInRef.current = false;
+        setHeroIsFadingIn(false);
+        renderFrame(0, 1, true);
         return;
       }
 
-      rAFIdRef.current = requestAnimationFrame(tick);
-    };
+      heroIsAwayRef.current = true;
+      setHeroIsAway(true);
+      heroIsFadingInRef.current = false;
+      setHeroIsFadingIn(false);
+      startLoop();
+    } else {
+      // Transition back to home
+      // 4) TRANSITION BACK TO HOME: While objects at a=1, reset scroll progress p to 0
+      targetRef.current = 0;
+      currentRef.current = 0;
+      targetARef.current = 0;
+      isEnteringAwayRef.current = false;
+      blendStartTimeRef.current = performance.now();
 
-    const startLoop = () => {
-      if (reducedMotionRef.current) return;
-      if (!isLoopRunningRef.current) {
-        isLoopRunningRef.current = true;
-        setWillChange(true);
-        lastTimeRef.current = performance.now();
-        rAFIdRef.current = requestAnimationFrame(tick);
+      // Reset word to 'sees'
+      activeWordRef.current = 'sees';
+      requestAnimationFrame(() => {
+        setCurrentWord('sees');
+      });
+
+      if (isReduced) {
+        blendARef.current = 0;
+        heroIsAwayRef.current = false;
+        setHeroIsAway(false);
+        heroIsFadingInRef.current = false;
+        setHeroIsFadingIn(false);
+        renderFrame(0, 0, false);
+        return;
       }
-    };
 
-    const triggerInteraction = () => {
-      if (!hasInteractedRef.current) {
-        hasInteractedRef.current = true;
-        setHasInteracted(true);
-      }
-    };
+      // Fade hero back in: delayed by 400ms, duration 400ms
+      heroIsAwayRef.current = false;
+      setHeroIsAway(false);
+      heroIsFadingInRef.current = true;
+      setHeroIsFadingIn(true);
+      const timer = window.setTimeout(() => {
+        heroIsFadingInRef.current = false;
+        setHeroIsFadingIn(false);
+      }, 850);
 
-    // Cache initial stage dimensions
+      startLoop();
+
+      return () => {
+        window.clearTimeout(timer);
+      };
+    }
+  }, [shouldBeAway, renderFrame, startLoop]);
+
+  const triggerInteraction = () => {
+    if (!hasInteractedRef.current) {
+      hasInteractedRef.current = true;
+      setHasInteracted(true);
+    }
+  };
+
+  // Setup loop, resize and input event listeners
+  useEffect(() => {
+    const checkMotion = () => {
+      const reduced = typeof window !== 'undefined' && window.matchMedia
+        ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        : false;
+      reducedMotionRef.current = reduced;
+      return reduced;
+    };
+    const isReduced = checkMotion();
+
     const updateDimensions = () => {
       if (stageRef.current) {
         cachedStageSize.current = {
@@ -185,22 +327,27 @@ export const DeskHome: React.FC = () => {
       const isMob = window.innerWidth < 700;
       isMobileRef.current = isMob;
       setIsMobile(isMob);
-      renderFrame(currentRef.current);
+      renderFrame(currentRef.current, blendARef.current, isEnteringAwayRef.current);
     };
 
     updateDimensions();
 
-    // Attach testing helper to window for headless verification
+    // Testing helper attached to window
     if (typeof window !== 'undefined') {
       (window as unknown as { __setProgress?: (p: number) => void }).__setProgress = (p: number) => {
         targetRef.current = p;
         currentRef.current = p;
-        renderFrame(p);
+        renderFrame(p, blendARef.current, isEnteringAwayRef.current);
       };
       (window as unknown as { __getProgress?: () => number }).__getProgress = () => currentRef.current;
+      (window as unknown as { __setBlendA?: (a: number) => void }).__setBlendA = (a: number) => {
+        blendARef.current = a;
+        targetARef.current = a;
+        renderFrame(currentRef.current, a, isEnteringAwayRef.current);
+      };
+      (window as unknown as { __getBlendA?: () => number }).__getBlendA = () => blendARef.current;
     }
 
-    // Resize listener (debounced)
     let resizeTimer: number | null = null;
     const handleResize = () => {
       if (resizeTimer) window.clearTimeout(resizeTimer);
@@ -210,36 +357,34 @@ export const DeskHome: React.FC = () => {
 
     const stageEl = stageRef.current;
     if (stageEl && !isReduced) {
-      // 1. Wheel listener (non-passive to preventDefault on stage)
       const handleWheel = (e: WheelEvent) => {
-        if (reducedMotionRef.current) return;
+        // Listeners only active in home mode
+        if (reducedMotionRef.current || blendARef.current > 0.01) return;
         e.preventDefault();
         triggerInteraction();
 
         let dy = e.deltaY;
         if (e.deltaMode === 1) {
-          dy *= 16; // lines
+          dy *= 16;
         } else if (e.deltaMode === 2) {
-          dy *= window.innerHeight; // pages
+          dy *= window.innerHeight;
         }
 
-        // Clamp each event's delta to +-120
         const clampedDy = Math.max(-120, Math.min(120, dy));
         targetRef.current += clampedDy / 2500;
         startLoop();
       };
 
-      // 2. Touch listeners
       let lastTouchY = 0;
       const handleTouchStart = (e: TouchEvent) => {
-        if (reducedMotionRef.current) return;
+        if (reducedMotionRef.current || blendARef.current > 0.01) return;
         if (e.touches.length > 0) {
           lastTouchY = e.touches[0].clientY;
         }
       };
 
       const handleTouchMove = (e: TouchEvent) => {
-        if (reducedMotionRef.current) return;
+        if (reducedMotionRef.current || blendARef.current > 0.01) return;
         if (e.touches.length > 0) {
           e.preventDefault();
           const currentY = e.touches[0].clientY;
@@ -253,11 +398,9 @@ export const DeskHome: React.FC = () => {
         }
       };
 
-      // 3. Keyboard listener
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (reducedMotionRef.current) return;
+        if (reducedMotionRef.current || blendARef.current > 0.01) return;
 
-        // Do not hijack keys while a link, button or mobile menu has focus
         const active = document.activeElement as HTMLElement | null;
         if (
           active &&
@@ -317,20 +460,19 @@ export const DeskHome: React.FC = () => {
       }
       setWillChange(false);
     };
-  }, []);
+  }, [renderFrame, startLoop]);
 
-  // Filter objects for mobile: only laptop, notebook, plant, coffee cup, headphones under 700px
   const visibleObjects = deskObjects.filter((obj) => (isMobile ? obj.showOnMobile : true));
 
-  // Pointerdown handler for Click Spark burst
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Skip if clicking on interactive elements like nav, links, buttons
+    // Only spawn sparks in home mode on non-interactive regions
+    if (blendARef.current > 0.05) return;
+
     const target = e.target as HTMLElement | null;
     if (target && target.closest('a, button, nav, input, select, textarea')) {
       return;
     }
 
-    // Skip spark under prefers-reduced-motion
     if (typeof window !== 'undefined' && window.matchMedia) {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         return;
@@ -345,10 +487,8 @@ export const DeskHome: React.FC = () => {
       rotation: Math.floor(Math.random() * 45),
     };
 
-    // Keep at most 8 alive at once
     setSparks((prev) => [...prev.slice(-7), newSpark]);
 
-    // Remove element after 550ms
     setTimeout(() => {
       setSparks((prev) => prev.filter((s) => s.id !== sparkId));
     }, 550);
@@ -357,18 +497,23 @@ export const DeskHome: React.FC = () => {
   return (
     <section
       ref={stageRef}
-      className="desk-surface-stage"
+      className={`desk-surface-stage ${shouldBeAway ? 'mode-away' : 'mode-home'}`}
       aria-label="Interactive scrapbook desk workspace"
       onPointerDown={handlePointerDown}
     >
       {/* Centered Single-line Hero Message */}
-      <HeroLine ref={heroRef} currentWord={currentWord} />
+      <HeroLine
+        ref={heroRef}
+        currentWord={currentWord}
+        isAway={heroIsAway}
+        isFadingIn={heroIsFadingIn}
+      />
 
       {/* Scattered Desk Objects Layer: transforms only */}
       <div className="desk-objects-stage-layer" aria-hidden="true">
         {visibleObjects.map((obj) => {
           const widthVw = isMobile && obj.mobileWidthVw !== undefined ? obj.mobileWidthVw : obj.widthVw;
-          const pos = getObjectTransform(obj.id, 0, isMobile);
+          const pos = shouldBeAway ? (AWAY_LAYOUT[obj.id] || { x: 50, y: 50, rot: 0 }) : { x: obj.x, y: obj.y, rot: obj.rotation };
 
           const style: React.CSSProperties = {
             width: `${widthVw}vw`,
@@ -398,9 +543,9 @@ export const DeskHome: React.FC = () => {
         })}
       </div>
 
-      {/* Handwritten scroll hint with doodle arrow */}
+      {/* Handwritten scroll hint with doodle arrow (visible only in home mode) */}
       <div
-        className={`desk-scroll-hint font-handwriting ${hasInteracted ? 'is-faded' : ''}`}
+        className={`desk-scroll-hint font-handwriting ${hasInteracted || shouldBeAway ? 'is-faded' : ''}`}
         aria-hidden="true"
       >
         <span>scroll</span>
@@ -438,7 +583,6 @@ export const DeskHome: React.FC = () => {
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
           >
-            {/* 8 Short Radial Dashes with a gap in the center */}
             <g stroke="var(--base-400)" strokeWidth="2" strokeLinecap="round">
               <line x1="15" y1="3" x2="15" y2="7.5" />
               <line x1="15" y1="22.5" x2="15" y2="27" />

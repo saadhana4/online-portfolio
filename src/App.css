@@ -96,9 +96,12 @@
 /* By default on desktop (>= 1000px) */
 .mobile-nav-container {
   display: none;
+  align-items: center;
+  gap: 8px;
+  position: relative;
 }
 
-/* Under 1000px wide, collapse to a single "Menu" pill */
+/* Under 1000px wide, collapse to a Menu pill (+ Back pill on inner routes) */
 @media (max-width: 999px) {
   .header-nav {
     top: 20px;
@@ -108,7 +111,7 @@
     display: none !important;
   }
   .mobile-nav-container {
-    display: block !important;
+    display: flex !important;
   }
 }
 
@@ -178,6 +181,112 @@
 .mobile-menu-drawer .nav-pill {
   width: 100%;
   justify-content: flex-start;
+}
+
+/* ==========================================================================
+   5) BACK PILL: ENTRANCE ANIMATION & DRAW-ARROW SVG
+   ========================================================================== */
+.back-pill-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  overflow: visible;
+  animation: backPillEntrance 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes backPillEntrance {
+  0% {
+    max-width: 0;
+    opacity: 0;
+    margin-right: -8px;
+    transform: scale(0.92);
+    overflow: hidden;
+  }
+  99% {
+    overflow: hidden;
+  }
+  100% {
+    max-width: 130px;
+    opacity: 1;
+    margin-right: 0;
+    transform: scale(1);
+    overflow: visible;
+  }
+}
+
+.back-pill {
+  position: relative;
+}
+
+.back-icon-svg {
+  width: 1.3rem;
+  height: 1.3rem;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+/* Hand-drawn arrow drawing itself out to the LEFT of the Back pill */
+.back-pill-draw-arrow-svg {
+  position: absolute;
+  right: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  width: 120px;
+  height: 28px;
+  overflow: visible;
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.back-pill-draw-arrow-svg path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 450ms ease-out;
+}
+
+/* On hover and keyboard focus-visible of .back-pill */
+.back-pill:hover .back-pill-draw-arrow-svg,
+.back-pill:focus-visible .back-pill-draw-arrow-svg {
+  opacity: 1;
+  transition: opacity 80ms ease-in;
+}
+
+.back-pill:hover .back-pill-draw-arrow-svg path,
+.back-pill:focus-visible .back-pill-draw-arrow-svg path {
+  stroke-dashoffset: 0;
+}
+
+/* Mobile back pill */
+.mobile-back-wrapper {
+  display: inline-flex;
+}
+
+/* Hide drawing arrow under 1000px, on devices with (hover: none), and under prefers-reduced-motion */
+@media (max-width: 999px), (hover: none), (prefers-reduced-motion: reduce) {
+  .back-pill-draw-arrow-svg {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back-pill-wrapper {
+    animation: none !important;
+    max-width: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .route-content-entering {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .desk-hero-minimal.is-away {
+    transition: none !important;
+  }
+  .desk-hero-minimal.is-fading-in {
+    transition: none !important;
+  }
 }
 
 /* ==========================================================================
@@ -337,6 +446,16 @@
   touch-action: none; /* Disables default touch scrolling for stage drag */
 }
 
+/* When in away mode, fixed full-viewport behind the scrolling content */
+.desk-surface-stage.mode-away {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2;
+  pointer-events: none;
+}
+
 /* 3) HERO LINE (NO CARD)
    Vertical center driven by progress y% via transform translateY
    Body font-size 15px, weight 400, color var(--base-400)
@@ -358,6 +477,24 @@
   border: none;
   background: none;
   box-shadow: none;
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+/* Hero line fades out in 300ms (opacity 0, slight translateY -12px) then hidden & inert */
+.desk-hero-minimal.is-away {
+  opacity: 0 !important;
+  transform: translate3d(-50%, 45vh, 0) translateY(calc(-50% - 12px)) !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 300ms ease, transform 300ms ease, visibility 0s 300ms !important;
+}
+
+/* Fade hero line back in (400ms, delayed 400ms) with word "sees" */
+.desk-hero-minimal.is-fading-in {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translate3d(-50%, 45vh, 0) translateY(-50%) !important;
+  transition: opacity 400ms ease 400ms, transform 400ms ease 400ms !important;
 }
 
 .hero-single-line {
@@ -517,7 +654,30 @@
 
 /* ==========================================================================
    PAGE OVERLAY / VIEWS (WORK & JOURNEY) - RECOLORED TO NEW PALETTE
+   Page backgrounds transparent so cropped desk objects show at edges behind content
    ========================================================================== */
+.route-content-container {
+  position: relative;
+  width: 100%;
+  z-index: 10;
+}
+
+/* Route content entrance: fades and slides in (opacity 0 to 1, translateY 16px to 0, 450ms) */
+.route-content-entering {
+  animation: routeContentEntrance 450ms cubic-bezier(0.22, 1, 0.36, 1) 350ms both;
+}
+
+@keyframes routeContentEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .page-overlay {
   position: relative;
   width: 100%;
@@ -525,7 +685,7 @@
   padding: 100px 20px 60px 20px;
   display: flex;
   justify-content: center;
-  background-color: var(--base-100);
+  background-color: transparent;
 }
 
 .page-header-row {
@@ -538,7 +698,7 @@
 
 /* Work Page */
 .work-page-container {
-  background-color: var(--base-100);
+  background-color: transparent;
 }
 
 .work-content-wrapper {
@@ -721,7 +881,7 @@
 
 /* Journey Page */
 .journey-page-container {
-  background-color: var(--base-100);
+  background-color: transparent;
 }
 
 .journey-content-wrapper {
