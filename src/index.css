@@ -228,6 +228,10 @@ body.home-route {
     transform: none !important;
   }
 
+  .desk-scroll-hint {
+    display: none !important;
+  }
+
   .phone-modal-container {
     animation: none !important;
     transform: translateY(0) !important;

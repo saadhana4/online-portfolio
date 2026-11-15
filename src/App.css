@@ -334,20 +334,21 @@
   height: 100svh;
   overflow: hidden;
   background-color: var(--base-100);
+  touch-action: none; /* Disables default touch scrolling for stage drag */
 }
 
 /* 3) HERO LINE (NO CARD)
-   Vertical center at exactly top: 45% and left: 50%
+   Vertical center driven by progress y% via transform translateY
    Body font-size 15px, weight 400, color var(--base-400)
    white-space: nowrap on 700px and wider
    Cycling word: Caveat, ~34px, var(--accent)
    ========================================================================== */
 .desk-hero-minimal {
   position: absolute;
-  top: 45%;
+  top: 0;
   left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10;
+  transform: translate3d(-50%, 45vh, 0) translateY(-50%);
+  z-index: 20; /* Keep strictly above desk objects (z-index 1..10) */
   pointer-events: none; /* Never blocks desk objects */
   text-align: center;
   width: 90%;
@@ -392,19 +393,15 @@
   font-weight: 700;
   color: var(--accent);
   line-height: 1;
-  animation: wordSoftSwap 3.2s infinite ease-in-out;
 }
 
-@keyframes wordSoftSwap {
-  0%, 75% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  85% {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  90% {
+/* Quick fade/slide swap animation (~250ms) when word changes */
+.word-swap-fade {
+  animation: wordSwapFadeAnim 0.25s ease-out forwards;
+}
+
+@keyframes wordSwapFadeAnim {
+  0% {
     opacity: 0;
     transform: translateY(4px);
   }
@@ -414,8 +411,47 @@
   }
 }
 
+/* Handwritten scroll hint with doodle arrow */
+.desk-scroll-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--base-300);
+  font-family: var(--font-handwriting);
+  font-size: 1.25rem;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 15;
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  opacity: 0.85;
+  user-select: none;
+}
+
+.desk-scroll-hint svg {
+  animation: hintArrowBounce 1.8s ease-in-out infinite;
+}
+
+@keyframes hintArrowBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+.desk-scroll-hint.is-faded {
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px);
+}
+
 /* ==========================================================================
-   4) DESK OBJECTS CUTOUTS (BIGGER, SPREAD, COMPLETELY STATIC)
+   4) DESK OBJECTS CUTOUTS (DRIFT AND SCATTER, TRANSFORMS ONLY)
    NO hover, active, focus or touch movement: static cutout style
    ========================================================================== */
 .desk-objects-stage-layer {
@@ -428,11 +464,11 @@
 
 .desk-object-cutout {
   position: absolute;
-  transform: translate(-50%, -50%) rotate(var(--base-rot));
+  top: 0;
+  left: 0;
   transform-origin: center center;
   pointer-events: none; /* Non-interactive per specs */
   user-select: none;
-  /* Completely static: no transitions, no animations */
 }
 
 /* Sticker silhouette filter */
@@ -1143,8 +1179,6 @@
 
   .desk-hero-minimal {
     width: 90%;
-    top: 45%;
-    left: 50%;
   }
 
   /* 2 centered lines on mobile */
