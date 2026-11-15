@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 320" width="500" height="320" fill="none">
+  <!-- AI Virtual Calculator Card -->
+  <rect width="500" height="320" rx="16" fill="#F4F6EC"/>
+  <defs>
+    <pattern id="calc-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E1E6D4" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="500" height="320" rx="16" fill="url(#calc-grid)"/>
+
+  <!-- Washi tape at corners -->
+  <polygon points="30,0 85,0 75,20 20,20" fill="#F3E3A3" opacity="0.85"/>
+  <polygon points="415,0 470,0 480,20 425,20" fill="#C8553D" opacity="0.7"/>
+
+  <!-- Left: Real-time hand landmark tracking wireframe -->
+  <g transform="translate(45, 45)">
+    <!-- Camera feed canvas -->
+    <rect x="0" y="0" width="220" height="200" rx="12" fill="#1F2A24" stroke="#1F2A24" stroke-width="3"/>
+    
+    <!-- Feed Overlay header -->
+    <circle cx="16" cy="16" r="4" fill="#C8553D"/>
+    <text x="26" y="20" font-family="'Nunito', sans-serif" font-size="9" fill="#88B49E" font-weight="bold">MediaPipe Hands • Live</text>
+
+    <!-- Hand Skeleton Landmarks & Bones -->
+    <!-- Wrist -->
+    <circle cx="110" cy="175" r="4" fill="#F3E3A3" stroke="#FAFBF7" stroke-width="1.5"/>
+    
+    <!-- Palm base to fingers -->
+    <!-- Thumb joints -->
+    <path d="M110 175 L85 155 L70 140 L60 125 L50 110" stroke="#88B49E" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="85" cy="155" r="3" fill="#FAFBF7"/>
+    <circle cx="70" cy="140" r="3" fill="#FAFBF7"/>
+    <circle cx="60" cy="125" r="3" fill="#FAFBF7"/>
+    <circle cx="50" cy="110" r="5" fill="#C8553D" stroke="#FAFBF7" stroke-width="2"/> <!-- Pinch Tip -->
+
+    <!-- Index finger joints (Pointing / Gesture active) -->
+    <path d="M110 175 L98 135 L95 105 L92 80 L90 55" stroke="#F3E3A3" stroke-width="2.8" stroke-linecap="round"/>
+    <circle cx="98" cy="135" r="3" fill="#FAFBF7"/>
+    <circle cx="95" cy="105" r="3" fill="#FAFBF7"/>
+    <circle cx="92" cy="80" r="3" fill="#FAFBF7"/>
+    <circle cx="90" cy="55" r="6" fill="#F3E3A3" stroke="#FAFBF7" stroke-width="2"/> <!-- Pointer active tip -->
+    <!-- Pulse ring on index tip -->
+    <circle cx="90" cy="55" r="11" fill="none" stroke="#F3E3A3" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+    <!-- Middle finger -->
+    <path d="M110 175 L116 130 L118 100 L120 78 L121 60" stroke="#88B49E" stroke-width="2.2" stroke-linecap="round"/>
+    <circle cx="116" cy="130" r="3" fill="#FAFBF7"/>
+    <circle cx="118" cy="100" r="3" fill="#FAFBF7"/>
+    <circle cx="120" cy="78" r="3" fill="#FAFBF7"/>
+    <circle cx="121" cy="60" r="4" fill="#FAFBF7"/>
+
+    <!-- Ring finger -->
+    <path d="M110 175 L132 135 L136 110 L138 95 L140 85" stroke="#88B49E" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="132" cy="135" r="2.5" fill="#FAFBF7"/>
+    <circle cx="136" cy="110" r="2.5" fill="#FAFBF7"/>
+    <circle cx="138" cy="95" r="2.5" fill="#FAFBF7"/>
+    <circle cx="140" cy="85" r="3.5" fill="#FAFBF7"/>
+
+    <!-- Pinky finger -->
+    <path d="M110 175 L148 145 L154 125 L158 112 L160 102" stroke="#88B49E" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="148" cy="145" r="2.5" fill="#FAFBF7"/>
+    <circle cx="154" cy="125" r="2.5" fill="#FAFBF7"/>
+    <circle cx="158" cy="112" r="2.5" fill="#FAFBF7"/>
+    <circle cx="160" cy="102" r="3.5" fill="#FAFBF7"/>
+
+    <!-- Connecting palm webbing -->
+    <path d="M85 155 L98 135 L116 130 L132 135 L148 145" stroke="#88B49E" stroke-width="1.5" stroke-dasharray="2 2" fill="none"/>
+  </g>
+
+  <!-- Right: Virtual Touchless Calculator Keypad -->
+  <g transform="translate(290, 45)">
+    <rect x="0" y="0" width="165" height="200" rx="14" fill="#FAFBF7" stroke="#1F2A24" stroke-width="3"/>
+    
+    <!-- LCD Display -->
+    <rect x="12" y="14" width="141" height="38" rx="6" fill="#2E3A33" stroke="#1F2A24" stroke-width="2"/>
+    <text x="145" y="38" font-family="'Courier New', monospace" font-size="19" font-weight="bold" fill="#F3E3A3" text-anchor="end">42 × 8 = 336</text>
+
+    <!-- Keypad Grid (Touchless buttons with glow) -->
+    <!-- Row 1 -->
+    <rect x="12" y="60" width="30" height="28" rx="6" fill="#F4F6EC" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="27" y="79" font-family="'Nunito', sans-serif" font-size="13" font-weight="bold" fill="#1F2A24" text-anchor="middle">7</text>
+    
+    <rect x="49" y="60" width="30" height="28" rx="6" fill="#F4F6EC" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="64" y="79" font-family="'Nunito', sans-serif" font-size="13" font-weight="bold" fill="#1F2A24" text-anchor="middle">8</text>
+
+    <rect x="86" y="60" width="30" height="28" rx="6" fill="#F4F6EC" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="101" y="79" font-family="'Nunito', sans-serif" font-size="13" font-weight="bold" fill="#1F2A24" text-anchor="middle">9</text>
+
+    <rect x="123" y="60" width="30" height="28" rx="6" fill="#F3E3A3" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="138" y="79" font-family="'Nunito', sans-serif" font-size="14" font-weight="bold" fill="#1F2A24" text-anchor="middle">÷</text>
+
+    <!-- Row 2 (with active hover state on ×) -->
+    <rect x="12" y="94" width="30" height="28" rx="6" fill="#F4F6EC" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="27" y="113" font-family="'Nunito', sans-serif" font-size="13" font-weight="bold" fill="#1F2A24" text-anchor="middle">4</text>
+
+    <rect x="49" y="94" width="30" height="28" rx="6" fill="#F4F6EC" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="64" y="113" font-family="'Nunito', sans-serif" font-size="13" font-weight="bold" fill="#1F2A24" text-anchor="middle">5</text>
+
+    <rect x="86" y="94" width="30" height="28" rx="6" fill="#F4F6EC" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="101" y="113" font-family="'Nunito', sans-serif" font-size="13" font-weight="bold" fill="#1F2A24" text-anchor="middle">6</text>
+
+    <!-- Active Hovered Operator -->
+    <rect x="123" y="94" width="30" height="28" rx="6" fill="#C8553D" stroke="#1F2A24" stroke-width="2"/>
+    <text x="138" y="113" font-family="'Nunito', sans-serif" font-size="14" font-weight="bold" fill="#FAFBF7" text-anchor="middle">×</text>
+
+    <!-- Row 3 -->
+    <rect x="12" y="128" width="30" height="28" rx="6" fill="#F4F6EC" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="27" y="147" font-family="'Nunito', sans-serif" font-size="13" font-weight="bold" fill="#1F2A24" text-anchor="middle">1</text>
+
+    <rect x="49" y="128" width="30" height="28" rx="6" fill="#F4F6EC" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="64" y="147" font-family="'Nunito', sans-serif" font-size="13" font-weight="bold" fill="#1F2A24" text-anchor="middle">2</text>
+
+    <rect x="86" y="128" width="30" height="28" rx="6" fill="#F4F6EC" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="101" y="147" font-family="'Nunito', sans-serif" font-size="13" font-weight="bold" fill="#1F2A24" text-anchor="middle">3</text>
+
+    <rect x="123" y="128" width="30" height="28" rx="6" fill="#F3E3A3" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="138" y="147" font-family="'Nunito', sans-serif" font-size="14" font-weight="bold" fill="#1F2A24" text-anchor="middle">−</text>
+
+    <!-- Row 4 -->
+    <rect x="12" y="162" width="67" height="28" rx="6" fill="#F4F6EC" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="45" y="181" font-family="'Nunito', sans-serif" font-size="13" font-weight="bold" fill="#1F2A24" text-anchor="middle">0</text>
+
+    <rect x="86" y="162" width="30" height="28" rx="6" fill="#88B49E" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="101" y="181" font-family="'Nunito', sans-serif" font-size="14" font-weight="bold" fill="#1F2A24" text-anchor="middle">=</text>
+
+    <rect x="123" y="162" width="30" height="28" rx="6" fill="#F3E3A3" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="138" y="181" font-family="'Nunito', sans-serif" font-size="14" font-weight="bold" fill="#1F2A24" text-anchor="middle">+</text>
+  </g>
+
+  <!-- Bottom Handwritten ribbon -->
+  <g transform="translate(250, 275)">
+    <rect x="-170" y="0" width="340" height="32" rx="16" fill="#FAFBF7" stroke="#1F2A24" stroke-width="2"/>
+    <text x="0" y="21" font-family="'Caveat', cursive, sans-serif" font-size="18" font-weight="bold" fill="#1F2A24" text-anchor="middle">✨ Air-gesture calculations • Real-time OpenCV &amp; MediaPipe</text>
+  </g>
+</svg>

@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 320" width="500" height="320" fill="none">
+  <!-- Digital Case-Taking & Emergency Health ID System Card -->
+  <rect width="500" height="320" rx="16" fill="#F4F6EC"/>
+  <defs>
+    <pattern id="health-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E1E6D4" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="500" height="320" rx="16" fill="url(#health-grid)"/>
+
+  <!-- Washi tape at top -->
+  <polygon points="40,0 100,0 90,20 30,20" fill="#C8553D" opacity="0.8"/>
+  <polygon points="410,0 470,0 480,20 420,20" fill="#F3E3A3" opacity="0.85"/>
+
+  <!-- Left: Biometric Smart ID Badge -->
+  <g transform="translate(45, 45)">
+    <!-- ID Card Lanyard slot -->
+    <rect x="85" y="-12" width="40" height="10" rx="5" fill="#C8553D" stroke="#1F2A24" stroke-width="2"/>
+    
+    <!-- ID Card Body -->
+    <rect x="0" y="0" width="210" height="205" rx="14" fill="#FAFBF7" stroke="#1F2A24" stroke-width="3"/>
+    
+    <!-- Blue / Sage emergency header banner -->
+    <path d="M0 14 C0 6.3, 6.3 0, 14 0 L196 0 C203.7 0, 210 6.3, 210 14 L210 42 L0 42 Z" fill="#2E3A33" stroke="#1F2A24" stroke-width="2"/>
+    <text x="105" y="27" font-family="'Nunito', sans-serif" font-size="11" font-weight="bold" fill="#FAFBF7" text-anchor="middle">EMERGENCY HEALTH ID</text>
+
+    <!-- Biometric Fingerprint Box -->
+    <g transform="translate(18, 55)">
+      <rect x="0" y="0" width="65" height="75" rx="8" fill="#F4F6EC" stroke="#1F2A24" stroke-width="2"/>
+      <!-- Fingerprint arches -->
+      <path d="M32 20 C24 20, 18 26, 18 35 C18 48, 22 62, 32 62 C42 62, 46 48, 46 35 C46 26, 40 20, 32 20 Z" stroke="#C8553D" stroke-width="2" fill="none"/>
+      <path d="M32 28 C28 28, 24 32, 24 38 C24 46, 27 54, 32 54 C37 54, 40 46, 40 38 C40 32, 36 28, 32 28 Z" stroke="#C8553D" stroke-width="1.8" fill="none"/>
+      <path d="M32 36 C30 36, 28 38, 28 42 C28 46, 32 48, 32 48 C32 48, 36 46, 36 42 C36 38, 34 36, 32 36 Z" stroke="#C8553D" stroke-width="1.8" fill="none"/>
+      <!-- Verification checkmark -->
+      <circle cx="56" cy="66" r="8" fill="#88B49E" stroke="#1F2A24" stroke-width="1.2"/>
+      <path d="M53 66 L55 68 L59 64" stroke="#FAFBF7" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+
+    <!-- Patient ID details -->
+    <g transform="translate(95, 58)">
+      <text x="0" y="12" font-family="'Nunito', sans-serif" font-size="9" fill="#58675E">Consent Token</text>
+      <text x="0" y="27" font-family="'Courier New', monospace" font-size="12" font-weight="bold" fill="#1F2A24">#EMRG-8924</text>
+
+      <text x="0" y="45" font-family="'Nunito', sans-serif" font-size="9" fill="#58675E">Access Timer</text>
+      <rect x="0" y="50" width="95" height="18" rx="9" fill="#F3E3A3" stroke="#1F2A24" stroke-width="1"/>
+      <text x="47" y="63" font-family="'Nunito', sans-serif" font-size="9.5" font-weight="bold" fill="#1F2A24" text-anchor="middle">⏱️ 15:00 min left</text>
+    </g>
+
+    <!-- Standards Pill Tags -->
+    <g transform="translate(14, 142)">
+      <rect x="0" y="0" width="85" height="22" rx="11" fill="#EAEEDF" stroke="#1F2A24" stroke-width="1.2"/>
+      <text x="42" y="15" font-family="'Nunito', sans-serif" font-size="8.5" font-weight="bold" fill="#1F2A24" text-anchor="middle">ICD-11 TM2</text>
+
+      <rect x="95" y="0" width="85" height="22" rx="11" fill="#EAEEDF" stroke="#1F2A24" stroke-width="1.2"/>
+      <text x="137" y="15" font-family="'Nunito', sans-serif" font-size="8.5" font-weight="bold" fill="#1F2A24" text-anchor="middle">NAMASTE</text>
+
+      <rect x="0" y="28" width="180" height="22" rx="11" fill="#F4F6EC" stroke="#1F2A24" stroke-width="1.2"/>
+      <text x="90" y="43" font-family="'Nunito', sans-serif" font-size="8.5" font-weight="bold" fill="#C8553D" text-anchor="middle">Twilio SMS • Audit Logged</text>
+    </g>
+  </g>
+
+  <!-- Right: Doctor Consent Workflow & Security Gate -->
+  <g transform="translate(280, 45)">
+    <rect x="0" y="0" width="180" height="205" rx="14" fill="#FAFBF7" stroke="#1F2A24" stroke-width="3"/>
+
+    <!-- Workflow title -->
+    <rect x="0" y="0" width="180" height="34" rx="14" fill="#C8553D"/>
+    <text x="90" y="22" font-family="'Nunito', sans-serif" font-size="11.5" font-weight="bold" fill="#FAFBF7" text-anchor="middle">Consent &amp; Security</text>
+
+    <!-- Flow steps -->
+    <g transform="translate(18, 48)">
+      <!-- Step 1 -->
+      <circle cx="12" cy="12" r="10" fill="#88B49E" stroke="#1F2A24" stroke-width="1.5"/>
+      <text x="12" y="16" font-family="'Nunito', sans-serif" font-size="10" font-weight="bold" fill="#FAFBF7" text-anchor="middle">1</text>
+      <text x="30" y="12" font-family="'Nunito', sans-serif" font-size="9.5" font-weight="bold" fill="#1F2A24">Face / Biometric</text>
+      <text x="30" y="23" font-family="'Nunito', sans-serif" font-size="8" fill="#58675E">Instant match found</text>
+      <line x1="12" y1="24" x2="12" y2="38" stroke="#1F2A24" stroke-width="1.5" stroke-dasharray="2 2"/>
+
+      <!-- Step 2 -->
+      <circle cx="12" cy="50" r="10" fill="#F3E3A3" stroke="#1F2A24" stroke-width="1.5"/>
+      <text x="12" y="54" font-family="'Nunito', sans-serif" font-size="10" font-weight="bold" fill="#1F2A24" text-anchor="middle">2</text>
+      <text x="30" y="50" font-family="'Nunito', sans-serif" font-size="9.5" font-weight="bold" fill="#1F2A24">Doctor Request</text>
+      <text x="30" y="61" font-family="'Nunito', sans-serif" font-size="8" fill="#58675E">One-time token created</text>
+      <line x1="12" y1="62" x2="12" y2="76" stroke="#1F2A24" stroke-width="1.5" stroke-dasharray="2 2"/>
+
+      <!-- Step 3 -->
+      <circle cx="12" cy="88" r="10" fill="#88B49E" stroke="#1F2A24" stroke-width="1.5"/>
+      <text x="12" y="92" font-family="'Nunito', sans-serif" font-size="10" font-weight="bold" fill="#FAFBF7" text-anchor="middle">3</text>
+      <text x="30" y="88" font-family="'Nunito', sans-serif" font-size="9.5" font-weight="bold" fill="#1F2A24">SMS Notification</text>
+      <text x="30" y="99" font-family="'Nunito', sans-serif" font-size="8" fill="#58675E">Sent via Twilio API</text>
+      <line x1="12" y1="100" x2="12" y2="114" stroke="#1F2A24" stroke-width="1.5" stroke-dasharray="2 2"/>
+
+      <!-- Step 4 -->
+      <circle cx="12" cy="126" r="10" fill="#C8553D" stroke="#1F2A24" stroke-width="1.5"/>
+      <text x="12" y="130" font-family="'Nunito', sans-serif" font-size="10" font-weight="bold" fill="#FAFBF7" text-anchor="middle">4</text>
+      <text x="30" y="126" font-family="'Nunito', sans-serif" font-size="9.5" font-weight="bold" fill="#1F2A24">Auto Expire Lock</text>
+      <text x="30" y="137" font-family="'Nunito', sans-serif" font-size="8" fill="#58675E">Session wiped safely</text>
+    </g>
+  </g>
+
+  <!-- Bottom Handwritten badge -->
+  <g transform="translate(250, 275)">
+    <rect x="-165" y="0" width="330" height="32" rx="16" fill="#FAFBF7" stroke="#1F2A24" stroke-width="2"/>
+    <text x="0" y="21" font-family="'Caveat', cursive, sans-serif" font-size="18" font-weight="bold" fill="#1F2A24" text-anchor="middle">🔒 Biometric Identification &amp; Ayush Health Records</text>
+  </g>
+</svg>

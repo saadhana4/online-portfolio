@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 320" width="500" height="320" fill="none">
+  <!-- Aetheria Card -->
+  <rect width="500" height="320" rx="16" fill="#F4F6EC"/>
+  <defs>
+    <pattern id="aeth-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E1E6D4" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="500" height="320" rx="16" fill="url(#aeth-grid)"/>
+
+  <!-- Washi tape at top -->
+  <polygon points="35,0 95,0 85,20 25,20" fill="#F3E3A3" opacity="0.85"/>
+  <polygon points="415,0 475,0 485,20 425,20" fill="#E8D5B5" opacity="0.9"/>
+
+  <!-- Center Filmstrip / Frame sequence ribbon -->
+  <g transform="translate(35, 42)">
+    <!-- Filmstrip background -->
+    <rect x="0" y="0" width="430" height="195" rx="12" fill="#1F2A24" stroke="#1F2A24" stroke-width="3"/>
+    
+    <!-- Film sprocket holes top -->
+    <g fill="#FAFBF7">
+      <rect x="15" y="8" width="12" height="8" rx="2"/>
+      <rect x="55" y="8" width="12" height="8" rx="2"/>
+      <rect x="95" y="8" width="12" height="8" rx="2"/>
+      <rect x="135" y="8" width="12" height="8" rx="2"/>
+      <rect x="175" y="8" width="12" height="8" rx="2"/>
+      <rect x="215" y="8" width="12" height="8" rx="2"/>
+      <rect x="255" y="8" width="12" height="8" rx="2"/>
+      <rect x="295" y="8" width="12" height="8" rx="2"/>
+      <rect x="335" y="8" width="12" height="8" rx="2"/>
+      <rect x="375" y="8" width="12" height="8" rx="2"/>
+      <rect x="405" y="8" width="12" height="8" rx="2"/>
+    </g>
+
+    <!-- Film Frame 1: Preloader Glow -->
+    <g transform="translate(18, 25)">
+      <rect x="0" y="0" width="120" height="142" rx="6" fill="#2E3A33" stroke="#88B49E" stroke-width="1.5"/>
+      <circle cx="60" cy="60" r="28" fill="none" stroke="#F3E3A3" stroke-width="2.5" stroke-dasharray="8 5"/>
+      <text x="60" y="65" font-family="'Nunito', sans-serif" font-size="11" fill="#FAFBF7" text-anchor="middle" font-weight="bold">0%...99%</text>
+      <text x="60" y="115" font-family="'Caveat', cursive, sans-serif" font-size="16" fill="#F3E3A3" text-anchor="middle">Preloader</text>
+    </g>
+
+    <!-- Film Frame 2: Beauty Product Silhouette (Active Frame) -->
+    <g transform="translate(155, 20)">
+      <!-- Highlight active frame border -->
+      <rect x="0" y="0" width="125" height="152" rx="8" fill="#FDF8F5" stroke="#C8553D" stroke-width="3"/>
+      
+      <!-- Minimalist serum/perfume bottle -->
+      <!-- Dropper cap -->
+      <rect x="54" y="24" width="18" height="15" rx="3" fill="#C8553D"/>
+      <rect x="58" y="16" width="10" height="8" rx="2" fill="#FAFBF7" stroke="#1F2A24" stroke-width="1"/>
+      <!-- Bottle neck -->
+      <rect x="57" y="39" width="12" height="6" fill="#E8D5B5"/>
+      <!-- Glass bottle -->
+      <rect x="40" y="45" width="46" height="65" rx="10" fill="#FAFBF7" stroke="#1F2A24" stroke-width="2"/>
+      <!-- Amber serum inside -->
+      <rect x="44" y="65" width="38" height="40" rx="6" fill="#F3E3A3" opacity="0.75"/>
+      <!-- Brand label -->
+      <line x1="50" y1="80" x2="76" y2="80" stroke="#1F2A24" stroke-width="1.5"/>
+      <text x="63" y="92" font-family="'Nunito', sans-serif" font-size="6" font-weight="bold" fill="#1F2A24" text-anchor="middle">AETHERIA</text>
+      
+      <!-- Starburst sparkle -->
+      <path d="M96 35 Q104 35 104 27 Q104 35 112 35 Q104 35 104 43 Q104 35 96 35 Z" fill="#F3E3A3"/>
+      <path d="M22 65 Q28 65 28 59 Q28 65 34 65 Q28 65 28 71 Q28 65 22 65 Z" fill="#C8553D"/>
+
+      <!-- Frame sequence tag -->
+      <rect x="18" y="122" width="90" height="18" rx="9" fill="#1F2A24"/>
+      <text x="63" y="134" font-family="'Nunito', sans-serif" font-size="8.5" font-weight="bold" fill="#F3E3A3" text-anchor="middle">Frame 064 / 120</text>
+    </g>
+
+    <!-- Film Frame 3: Scroll animation trajectory -->
+    <g transform="translate(295, 25)">
+      <rect x="0" y="0" width="120" height="142" rx="6" fill="#2E3A33" stroke="#88B49E" stroke-width="1.5"/>
+      <path d="M20 120 C35 70, 85 85, 100 35" stroke="#F3E3A3" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 3" fill="none"/>
+      <circle cx="100" cy="35" r="5" fill="#C8553D"/>
+      <text x="60" y="105" font-family="'Nunito', sans-serif" font-size="9" fill="#FAFBF7" text-anchor="middle">Scroll-Driven</text>
+      <text x="60" y="122" font-family="'Caveat', cursive, sans-serif" font-size="16" fill="#88B49E" text-anchor="middle">Next.js &amp; React</text>
+    </g>
+
+    <!-- Film sprocket holes bottom -->
+    <g fill="#FAFBF7">
+      <rect x="15" y="178" width="12" height="8" rx="2"/>
+      <rect x="55" y="178" width="12" height="8" rx="2"/>
+      <rect x="95" y="178" width="12" height="8" rx="2"/>
+      <rect x="135" y="178" width="12" height="8" rx="2"/>
+      <rect x="175" y="178" width="12" height="8" rx="2"/>
+      <rect x="215" y="178" width="12" height="8" rx="2"/>
+      <rect x="255" y="178" width="12" height="8" rx="2"/>
+      <rect x="295" y="178" width="12" height="8" rx="2"/>
+      <rect x="335" y="178" width="12" height="8" rx="2"/>
+      <rect x="375" y="178" width="12" height="8" rx="2"/>
+      <rect x="405" y="178" width="12" height="8" rx="2"/>
+    </g>
+  </g>
+
+  <!-- Bottom Callout -->
+  <g transform="translate(250, 275)">
+    <rect x="-165" y="0" width="330" height="32" rx="16" fill="#FAFBF7" stroke="#1F2A24" stroke-width="2"/>
+    <text x="0" y="21" font-family="'Caveat', cursive, sans-serif" font-size="18" font-weight="bold" fill="#1F2A24" text-anchor="middle">🎬 Cinematic Frame-Sequence Scroll Experience</text>
+  </g>
+</svg>

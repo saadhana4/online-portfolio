@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 170" width="160" height="170" fill="none">
+  <defs>
+    <filter id="cup-shadow" x="-15%" y="-10%" width="135%" height="130%">
+      <feDropShadow dx="3" dy="5" stdDeviation="4" flood-color="#1F2A24" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <g filter="url(#cup-shadow)">
+    <!-- Steam Swirls -->
+    <path d="M60 42 C56 34, 66 26, 60 16 C57 11, 62 6, 60 2" stroke="#B0BEB5" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    <path d="M78 40 C74 30, 84 22, 78 12 C75 7, 80 3, 78 0" stroke="#B0BEB5" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    <path d="M96 44 C92 36, 102 28, 97 18" stroke="#B0BEB5" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+    <!-- Ceramic Saucer (Warm Paper/Sage) -->
+    <ellipse cx="78" cy="150" rx="60" ry="12" fill="#E2E6D5" stroke="#1F2A24" stroke-width="2.5"/>
+    <ellipse cx="78" cy="150" rx="42" ry="7" fill="#FAFBF7" stroke="#1F2A24" stroke-width="1.5" stroke-dasharray="4 2"/>
+
+    <!-- Cup Handle -->
+    <path d="M110 72 C132 72, 134 114, 110 118" stroke="#1F2A24" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M110 72 C129 72, 131 114, 110 118" stroke="#C8553D" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+
+    <!-- Mug Body (Terracotta/Warm tone) -->
+    <path d="M42 62 C41 95, 48 138, 78 138 C108 138, 115 95, 114 62 Z" fill="#C8553D" stroke="#1F2A24" stroke-width="2.8" stroke-linejoin="round"/>
+    
+    <!-- Top Rim of Mug -->
+    <ellipse cx="78" cy="62" rx="36" ry="11" fill="#E8D5B5" stroke="#1F2A24" stroke-width="2.5"/>
+    <!-- Coffee liquid surface -->
+    <ellipse cx="78" cy="64" rx="31" ry="8.5" fill="#3E2723"/>
+    <!-- Coffee foam bubble/swirl -->
+    <path d="M74 62 C78 61, 84 63, 82 66" stroke="#FAFBF7" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+
+    <!-- Mug Glaze Highlight & Cute Illustration -->
+    <!-- Cream dipped lower half -->
+    <path d="M44 94 C54 100, 102 100, 112 94 C112 110, 106 137, 78 137 C50 137, 44 110, 44 94 Z" fill="#F4F6EC" stroke="#1F2A24" stroke-width="2"/>
+    
+    <!-- Cute doodle on mug: smiling eyes -->
+    <circle cx="70" cy="112" r="1.8" fill="#1F2A24"/>
+    <circle cx="86" cy="112" r="1.8" fill="#1F2A24"/>
+    <path d="M74 117 Q78 122 82 117" stroke="#1F2A24" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+    <!-- Rosy cheeks -->
+    <circle cx="66" cy="115" r="2.5" fill="#F0A693" opacity="0.8"/>
+    <circle cx="90" cy="115" r="2.5" fill="#F0A693" opacity="0.8"/>
+  </g>
+</svg>

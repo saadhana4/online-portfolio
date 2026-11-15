@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" width="320" height="240" fill="none">
+  <!-- Hand-drawn style laptop -->
+  <defs>
+    <filter id="hand-drawn-shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="3" dy="5" stdDeviation="4" flood-color="#1F2A24" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <g filter="url(#hand-drawn-shadow)">
+    <!-- Screen Shell -->
+    <path d="M48 28 C45 27, 268 25, 272 28 C275 32, 274 158, 271 162 C267 165, 52 164, 48 161 C45 158, 45 32, 48 28 Z" fill="#F4F6EC" stroke="#1F2A24" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Screen Inner Display -->
+    <path d="M58 38 C56 38, 258 37, 260 38 C262 40, 261 146, 259 148 C256 150, 61 149, 58 147 C56 145, 56 41, 58 38 Z" fill="#2E3A33" stroke="#1F2A24" stroke-width="2.5" stroke-linecap="round"/>
+    
+    <!-- Code Editor window header inside screen -->
+    <circle cx="70" cy="48" r="3" fill="#C8553D" />
+    <circle cx="80" cy="48" r="3" fill="#F3E3A3" />
+    <circle cx="90" cy="48" r="3" fill="#88B49E" />
+    
+    <!-- Code lines sketch -->
+    <line x1="70" y1="62" x2="115" y2="62" stroke="#F3E3A3" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="122" y1="62" x2="160" y2="62" stroke="#88B49E" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="80" y1="74" x2="140" y2="74" stroke="#E9EBDD" stroke-width="2" stroke-linecap="round"/>
+    <line x1="145" y1="74" x2="190" y2="74" stroke="#F3E3A3" stroke-width="2" stroke-linecap="round"/>
+    <line x1="80" y1="86" x2="175" y2="86" stroke="#C8553D" stroke-width="2" stroke-linecap="round"/>
+    <line x1="70" y1="98" x2="105" y2="98" stroke="#88B49E" stroke-width="2.5" stroke-linecap="round"/>
+    
+    <!-- Little heart sticker on screen bezel -->
+    <path d="M236 44 C236 41, 239 39, 242 41 C245 39, 248 41, 248 44 C248 48, 242 52, 242 52 C242 52, 236 48, 236 44 Z" fill="#C8553D" stroke="#1F2A24" stroke-width="1.2"/>
+    
+    <!-- Screen center illustration: cute smiling terminal -->
+    <rect x="110" y="98" width="100" height="42" rx="6" fill="#1F2A24" stroke="#88B49E" stroke-width="1.5" stroke-dasharray="3 2"/>
+    <text x="160" y="117" font-family="'Courier New', monospace" font-size="11" fill="#F3E3A3" text-anchor="middle" font-weight="bold">&lt;dev/&gt;</text>
+    <text x="160" y="132" font-family="'Caveat', cursive, sans-serif" font-size="14" fill="#E9EBDD" text-anchor="middle">hello world!</text>
+
+    <!-- Laptop Base / Keyboard deck (perspective view) -->
+    <path d="M22 172 C20 167, 298 166, 296 172 L315 208 C316 214, 4 214, 5 208 Z" fill="#E9EBDD" stroke="#1F2A24" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Keyboard Area -->
+    <path d="M52 176 L268 176 L280 196 L40 196 Z" fill="#D3D7C5" stroke="#1F2A24" stroke-width="2" stroke-linejoin="round"/>
+    
+    <!-- Key rows sketch -->
+    <line x1="56" y1="182" x2="264" y2="182" stroke="#1F2A24" stroke-width="1.8" stroke-dasharray="8 4"/>
+    <line x1="49" y1="189" x2="271" y2="189" stroke="#1F2A24" stroke-width="1.8" stroke-dasharray="9 4"/>
+
+    <!-- Trackpad -->
+    <rect x="135" y="200" width="50" height="8" rx="2" fill="#FAFBF7" stroke="#1F2A24" stroke-width="1.5"/>
+
+    <!-- Cute Sticker on Base: "build" pill -->
+    <g transform="translate(62, 199) rotate(-4)">
+      <rect x="0" y="0" width="38" height="11" rx="5" fill="#F3E3A3" stroke="#1F2A24" stroke-width="1.2"/>
+      <text x="19" y="8.5" font-family="'Nunito', sans-serif" font-size="7.5" font-weight="bold" fill="#1F2A24" text-anchor="middle">CREATE</text>
+    </g>
+    <!-- Sticker: Coffee cup sticker -->
+    <circle cx="240" cy="204" r="6" fill="#C8553D" stroke="#1F2A24" stroke-width="1.2"/>
+    <text x="240" y="207.5" font-size="8" fill="#F4F6EC" text-anchor="middle">☕</text>
+  </g>
+</svg>

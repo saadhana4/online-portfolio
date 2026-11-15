@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" fill="none">
+  <defs>
+    <filter id="hp-shadow" x="-15%" y="-15%" width="135%" height="135%">
+      <feDropShadow dx="3" dy="5" stdDeviation="4" flood-color="#1F2A24" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <g filter="url(#hp-shadow)">
+    <!-- Curly Audio Cable -->
+    <path d="M152 145 C165 155, 175 160, 160 175 C145 190, 125 170, 140 160 C155 150, 170 170, 180 185" stroke="#1F2A24" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+
+    <!-- Headband Arc -->
+    <path d="M46 112 C46 52, 154 52, 154 112" stroke="#1F2A24" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <path d="M46 112 C46 54, 154 54, 154 112" stroke="#F4F6EC" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+    
+    <!-- Top Padded Cushion Band -->
+    <path d="M68 62 C78 52, 122 52, 132 62" stroke="#C8553D" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M68 62 C78 52, 122 52, 132 62" stroke="#1F2A24" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 3" fill="none"/>
+
+    <!-- Left Ear Cup Assembly -->
+    <g transform="translate(25, 100) rotate(-12)">
+      <!-- Outer metallic fork -->
+      <path d="M12 0 L12 20" stroke="#1F2A24" stroke-width="4" stroke-linecap="round"/>
+      <!-- Outer dome -->
+      <rect x="2" y="16" width="24" height="42" rx="10" fill="#2E3A33" stroke="#1F2A24" stroke-width="2.5"/>
+      <!-- Soft foam pad -->
+      <rect x="20" y="12" width="14" height="50" rx="7" fill="#E8D5B5" stroke="#1F2A24" stroke-width="2.5"/>
+      <!-- Accent plate -->
+      <circle cx="14" cy="37" r="5" fill="#F3E3A3" stroke="#1F2A24" stroke-width="1.2"/>
+    </g>
+
+    <!-- Right Ear Cup Assembly -->
+    <g transform="translate(145, 96) rotate(12)">
+      <!-- Outer metallic fork -->
+      <path d="M22 0 L22 20" stroke="#1F2A24" stroke-width="4" stroke-linecap="round"/>
+      <!-- Soft foam pad -->
+      <rect x="2" y="12" width="14" height="50" rx="7" fill="#E8D5B5" stroke="#1F2A24" stroke-width="2.5"/>
+      <!-- Outer dome -->
+      <rect x="10" y="16" width="24" height="42" rx="10" fill="#2E3A33" stroke="#1F2A24" stroke-width="2.5"/>
+      <!-- Accent plate -->
+      <circle cx="22" cy="37" r="5" fill="#F3E3A3" stroke="#1F2A24" stroke-width="1.2"/>
+    </g>
+
+    <!-- Little music notes floating -->
+    <path d="M165 52 L172 48 L172 58 M165 52 L165 62" stroke="#C8553D" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="163" cy="62" r="2.5" fill="#C8553D"/>
+    <circle cx="170" cy="58" r="2.5" fill="#C8553D"/>
+  </g>
+</svg>

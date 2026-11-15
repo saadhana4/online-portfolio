@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60" fill="none">
+  <defs>
+    <filter id="pencil-shadow" x="-10%" y="-20%" width="120%" height="150%">
+      <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#1F2A24" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <g filter="url(#pencil-shadow)">
+    <!-- Pink Eraser -->
+    <path d="M12 21 C12 21, 5 22, 5 30 C5 38, 12 39, 12 39 L25 39 L25 21 Z" fill="#F0A693" stroke="#1F2A24" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- Brass Ferrule -->
+    <rect x="25" y="20" width="18" height="20" fill="#E5D38A" stroke="#1F2A24" stroke-width="2"/>
+    <line x1="31" y1="20" x2="31" y2="40" stroke="#1F2A24" stroke-width="1.2"/>
+    <line x1="37" y1="20" x2="37" y2="40" stroke="#1F2A24" stroke-width="1.2"/>
+
+    <!-- Hexagonal Pencil Body (Yellow) -->
+    <path d="M43 20 L155 20 L155 40 L43 40 Z" fill="#F3E3A3" stroke="#1F2A24" stroke-width="2"/>
+    <!-- Pencil facets / lines -->
+    <line x1="43" y1="26" x2="155" y2="26" stroke="#E5D38A" stroke-width="2"/>
+    <line x1="43" y1="33" x2="155" y2="33" stroke="#D3BD6C" stroke-width="2"/>
+    
+    <!-- Stamped branding on pencil -->
+    <text x="96" y="31.5" font-family="'Nunito', sans-serif" font-size="7" font-weight="bold" fill="#1F2A24" text-anchor="middle" letter-spacing="1">SKETCH 2B ★</text>
+
+    <!-- Sharpened Wood Cone -->
+    <path d="M155 20 L188 30 L155 40 Z" fill="#E8D5B5" stroke="#1F2A24" stroke-width="2" stroke-linejoin="round"/>
+    
+    <!-- Graphite Tip -->
+    <path d="M176 26.5 L189 30 L176 33.5 Z" fill="#1F2A24"/>
+  </g>
+</svg>
