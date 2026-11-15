@@ -21,11 +21,20 @@ export const App: React.FC = () => {
     return '';
   };
 
-  // Synchronize hash with state and document title
+  // Synchronize hash with state, document title, and home-route class
   useEffect(() => {
     const handleHashChange = () => {
       const route = parseHash(window.location.hash);
       setCurrentRoute(route);
+
+      // On home route only, set html/body overflow: hidden so the desk never scrolls
+      if (route === '') {
+        document.documentElement.classList.add('home-route');
+        document.body.classList.add('home-route');
+      } else {
+        document.documentElement.classList.remove('home-route');
+        document.body.classList.remove('home-route');
+      }
 
       // Update document title dynamically
       switch (route) {
@@ -50,7 +59,11 @@ export const App: React.FC = () => {
     // Initialize on mount
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      document.documentElement.classList.remove('home-route');
+      document.body.classList.remove('home-route');
+    };
   }, []);
 
   const navigateTo = useCallback((route: string) => {
@@ -71,7 +84,7 @@ export const App: React.FC = () => {
       <main id="main-content" className="main-content" tabIndex={-1}>
         {/* Route: Home Desk view (also serves as background for About & Contact phone overlays) */}
         {(currentRoute === '' || currentRoute === 'about' || currentRoute === 'contact') && (
-          <DeskHome onNavigate={navigateTo} />
+          <DeskHome />
         )}
 
         {/* Route: Work Project Slider */}

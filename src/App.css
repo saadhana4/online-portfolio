@@ -1,5 +1,6 @@
 /* ==========================================================================
    APP STYLES: Playful Handmade Scrapbook Portfolio
+   Exact Design System & Positioning Specifications
    ========================================================================== */
 
 /* Main App Wrapper */
@@ -9,7 +10,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  background-color: var(--color-paper);
+  background-color: var(--base-100);
 }
 
 .main-content {
@@ -17,6 +18,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  z-index: 2; /* Sits above the paper grain overlay (z-index: 1) */
 }
 
 /* Screen reader utility */
@@ -34,51 +36,53 @@
 
 /* ==========================================================================
    HEADER & NAVIGATION
+   Top: 26px, Signature: left 27px, top 24px, 34px tall
+   Last pill's right edge 28px from screen edge, 8px between pills
    ========================================================================== */
 .site-header {
-  height: var(--header-height);
-  padding: 16px 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
+  height: 0;
+  padding: 0;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  background: linear-gradient(180deg, rgba(233, 235, 221, 0.95) 0%, rgba(233, 235, 221, 0.82) 80%, rgba(233, 235, 221, 0) 100%);
-  backdrop-filter: blur(4px);
+  pointer-events: none;
 }
 
+/* Signature top-left: Caveat, left 27px, top 24px, about 34px tall */
 .header-brand {
-  display: flex;
-  align-items: center;
+  position: absolute;
+  left: 27px;
+  top: 24px;
+  pointer-events: auto;
 }
 
 .brand-signature {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
   text-decoration: none;
-  color: var(--color-ink);
+  color: var(--base-400);
   font-family: var(--font-handwriting);
-  font-size: 2.2rem;
+  font-size: 34px;
+  line-height: 1;
   font-weight: 700;
   letter-spacing: -0.5px;
-  transition: transform 0.2s ease, color 0.2s ease;
+  transition: transform 0.25s ease, color 0.25s ease;
   user-select: none;
 }
 
 .brand-signature:hover {
-  transform: rotate(-3deg) scale(1.05);
-  color: var(--color-terracotta);
+  transform: rotate(-2deg) scale(1.04);
+  color: var(--accent);
 }
 
-.signature-dot {
-  color: var(--color-terracotta);
-  font-size: 1.3rem;
-  margin-top: -10px;
-}
-
+/* Navigation container */
 .header-nav {
+  position: absolute;
+  top: 26px;
+  right: 28px;
+  pointer-events: auto;
   display: flex;
   align-items: center;
 }
@@ -86,20 +90,103 @@
 .nav-pills-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px; /* Exact 8px between pills */
+}
+
+/* By default on desktop (>= 1000px) */
+.mobile-nav-container {
+  display: none;
+}
+
+/* Under 1000px wide, collapse to a single "Menu" pill */
+@media (max-width: 999px) {
+  .header-nav {
+    top: 20px;
+    right: 20px;
+  }
+  .nav-pills-desktop {
+    display: none !important;
+  }
+  .mobile-nav-container {
+    display: block !important;
+  }
 }
 
 .nav-pill {
-  font-size: 0.9rem;
-  padding: 7px 16px;
+  height: 2.575rem;
+  padding: 0 1.4rem 0 0.85rem;
+  gap: 0.625rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--pill);
+  color: var(--base-400);
+  font: 700 1rem "DM Sans", sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.25s, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Invisible bigger hit area */
+.nav-pill::before {
+  content: "";
+  position: absolute;
+  inset: -4px 0;
+}
+
+/* Hover and current page */
+.nav-pill:hover,
+.nav-pill.active {
+  background: var(--pill-hover);
+  color: var(--base-400);
+}
+
+.nav-pill:focus-visible {
+  outline: 2px solid var(--base-400);
+  outline-offset: 3px;
+}
+
+/* Mobile Nav Drawer (< 1000px) */
+.mobile-nav-container {
+  position: relative;
+}
+
+.menu-toggle-btn {
+  padding: 0 1.25rem 0 0.95rem;
+}
+
+.mobile-menu-drawer {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: var(--base-100);
+  padding: 12px;
+  border-radius: 20px;
+  border: 2px solid var(--base-200);
+  box-shadow: 0 12px 32px rgba(12, 9, 8, 0.12);
+  min-width: 170px;
+  animation: fadeIn 0.18s ease-out;
+}
+
+.mobile-menu-drawer .nav-pill {
+  width: 100%;
+  justify-content: flex-start;
 }
 
 /* ==========================================================================
    WORK PILL: HAMMER HITS THE WORD ANIMATION
    ========================================================================== */
 .hammer-icon-svg {
+  width: 1.3rem;
+  height: 1.3rem;
+  stroke: currentColor;
   transform-origin: 22% 88%;
   display: inline-block;
   vertical-align: middle;
@@ -209,6 +296,14 @@
   }
 }
 
+/* Pill Icons */
+.nav-pill svg {
+  width: 1.3rem;
+  height: 1.3rem;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
 /* Gentle matching hover animations for other pills */
 .journey-pill:hover .compass-icon-svg {
   animation: compassSpin 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -236,31 +331,41 @@
   position: relative;
   width: 100vw;
   min-height: 560px;
-  height: calc(100svh - var(--header-height));
+  height: 100svh;
   overflow: hidden;
-  background-color: var(--color-paper);
+  background-color: var(--base-100);
 }
 
-/* 1) HERO TEXT: SINGLE MINIMAL LINE CENTERED AT (50%, 45%) */
+/* 3) HERO LINE (NO CARD)
+   Vertical center at exactly top: 45% and left: 50%
+   Body font-size 15px, weight 400, color var(--base-400)
+   white-space: nowrap on 700px and wider
+   Cycling word: Caveat, ~34px, var(--accent)
+   ========================================================================== */
 .desk-hero-minimal {
   position: absolute;
-  left: 50%;
   top: 45%;
+  left: 50%;
   transform: translate(-50%, -50%);
   z-index: 10;
   pointer-events: none; /* Never blocks desk objects */
   text-align: center;
   width: 90%;
   max-width: 920px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
 }
 
 .hero-single-line {
   font-family: var(--font-body);
+  font-size: 15px;
   font-weight: 400;
-  font-size: clamp(0.9rem, 1.1vw, 1.05rem);
-  color: var(--color-ink);
+  color: var(--base-400);
   line-height: 1.5;
-  white-space: nowrap; /* Stays on one line 700px and wider */
+  white-space: nowrap;
   display: flex;
   align-items: baseline;
   justify-content: center;
@@ -275,7 +380,7 @@
 
 .hero-word-slot {
   display: inline-block;
-  min-width: 3.4em; /* Reserves width of longest word so line never jumps */
+  min-width: 58px; /* Reserved width of longest word ('cares' ~58px in Caveat at 34px) */
   text-align: left;
   vertical-align: baseline;
 }
@@ -283,9 +388,9 @@
 .hero-cycling-word {
   display: inline-block;
   font-family: var(--font-handwriting);
-  font-size: 1.9em; /* about 1.9x the body size */
+  font-size: 34px; /* about 2.3x the 15px body size */
   font-weight: 700;
-  color: var(--color-terracotta);
+  color: var(--accent);
   line-height: 1;
   animation: wordSoftSwap 3.2s infinite ease-in-out;
 }
@@ -310,7 +415,8 @@
 }
 
 /* ==========================================================================
-   2) DESK OBJECTS CUTOUTS (NO WHITE SQUARES)
+   4) DESK OBJECTS CUTOUTS (BIGGER, SPREAD, COMPLETELY STATIC)
+   NO hover, active, focus or touch movement: static cutout style
    ========================================================================== */
 .desk-objects-stage-layer {
   position: absolute;
@@ -324,18 +430,12 @@
   position: absolute;
   transform: translate(-50%, -50%) rotate(var(--base-rot));
   transform-origin: center center;
-  pointer-events: auto;
-  cursor: pointer;
+  pointer-events: none; /* Non-interactive per specs */
   user-select: none;
-  transition: transform 0.25s ease;
+  /* Completely static: no transitions, no animations */
 }
 
-.desk-object-cutout:hover {
-  animation: deskWobble 0.65s infinite ease-in-out;
-  z-index: 25 !important;
-}
-
-/* Sticker silhouette filter: no white square backing */
+/* Sticker silhouette filter */
 .desk-cutout-img {
   display: block;
   width: 100%;
@@ -345,7 +445,43 @@
 }
 
 /* ==========================================================================
+   6) CLICK SPARK BURST LAYER
+   ========================================================================== */
+.burst-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 90;
+}
+
+.click-spark-svg {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  transform: translate(-50%, -50%) rotate(var(--spark-rot));
+  pointer-events: none;
+  animation: sparkBurst 550ms ease-out forwards;
+}
+
+@keyframes sparkBurst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--spark-rot)) scale(0.35);
+  }
+  45% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) rotate(var(--spark-rot)) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(calc(var(--spark-rot) + 12deg)) scale(1.35);
+  }
+}
+
+/* ==========================================================================
    DOODLE COMPANION (Bottom-Left)
+   Left 28px, bottom 24px
    ========================================================================== */
 .desk-doodle-container {
   position: absolute;
@@ -357,6 +493,7 @@
   align-items: center;
   cursor: pointer;
   outline: none;
+  pointer-events: auto;
 }
 
 .desk-doodle-container:hover .doodle-character-svg {
@@ -364,7 +501,7 @@
 }
 
 .desk-doodle-container:focus-visible {
-  outline: 3px solid var(--color-terracotta);
+  outline: 2px solid var(--base-400);
   border-radius: 12px;
 }
 
@@ -375,7 +512,7 @@
 .doodle-caption {
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--color-ink-muted);
+  color: var(--base-350);
   margin-top: 2px;
 }
 
@@ -383,14 +520,14 @@
   position: absolute;
   bottom: 92px;
   left: 0;
-  background-color: var(--color-pill-yellow);
-  color: var(--color-ink);
-  border: 2px solid var(--color-ink);
+  background-color: var(--pill);
+  color: var(--base-400);
+  border: 1.5px solid var(--base-400);
   border-radius: 14px;
   padding: 8px 14px;
   font-size: 1.1rem;
   font-weight: 700;
-  box-shadow: 2px 3px 0px var(--color-ink);
+  box-shadow: 2px 3px 0px var(--base-400);
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -404,20 +541,21 @@
   font-size: 1.1rem;
   font-weight: 800;
   cursor: pointer;
-  color: var(--color-ink);
+  color: var(--base-400);
   line-height: 1;
 }
 
 /* ==========================================================================
-   PAGE OVERLAY / VIEWS (WORK & JOURNEY)
+   PAGE OVERLAY / VIEWS (WORK & JOURNEY) - RECOLORED TO NEW PALETTE
    ========================================================================== */
 .page-overlay {
   position: relative;
   width: 100%;
-  min-height: calc(100vh - var(--header-height));
-  padding: 24px 20px 60px 20px;
+  min-height: 100vh;
+  padding: 100px 20px 60px 20px;
   display: flex;
   justify-content: center;
+  background-color: var(--base-100);
 }
 
 .page-header-row {
@@ -428,11 +566,9 @@
   margin-bottom: 24px;
 }
 
-/* ==========================================================================
-   WORK PAGE (Project Showcase Slider)
-   ========================================================================== */
+/* Work Page */
 .work-page-container {
-  background-color: var(--color-paper);
+  background-color: var(--base-100);
 }
 
 .work-content-wrapper {
@@ -446,10 +582,10 @@
 .work-counter {
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--color-terracotta);
-  background-color: rgba(250, 251, 247, 0.85);
+  color: var(--accent);
+  background-color: var(--pill);
   padding: 4px 14px;
-  border: 1.5px solid var(--color-ink);
+  border: 1.5px solid var(--base-400);
   border-radius: 999px;
 }
 
@@ -457,8 +593,8 @@
 .project-frame-card {
   position: relative;
   width: 100%;
-  background-color: #FAFBF7;
-  border: 3px solid var(--color-ink);
+  background-color: var(--base-100);
+  border: 2px solid var(--base-400);
   border-radius: 16px;
   box-shadow: var(--shadow-scrapbook-card);
   padding: 28px;
@@ -473,6 +609,7 @@
   left: 20px;
   width: 70px;
   transform: rotate(-6deg);
+  background-color: var(--pill);
 }
 
 .tape-top-right {
@@ -480,6 +617,7 @@
   right: 20px;
   width: 70px;
   transform: rotate(7deg);
+  background-color: var(--pill);
 }
 
 .project-visual-wrapper {
@@ -487,8 +625,8 @@
   width: 100%;
   border-radius: 12px;
   overflow: hidden;
-  border: 2px solid var(--color-ink);
-  background-color: var(--color-paper-light);
+  border: 1.5px solid var(--base-400);
+  background-color: var(--base-200);
 }
 
 .project-visual-img {
@@ -502,14 +640,14 @@
   position: absolute;
   bottom: 12px;
   right: 12px;
-  background-color: var(--color-pill-yellow);
-  color: var(--color-ink);
-  border: 2px solid var(--color-ink);
+  background-color: var(--pill);
+  color: var(--base-400);
+  border: 1.5px solid var(--base-400);
   border-radius: 999px;
   padding: 4px 14px;
   font-size: 1.15rem;
   font-weight: 700;
-  box-shadow: 2px 2px 0px var(--color-ink);
+  box-shadow: 2px 2px 0px var(--base-400);
 }
 
 .project-info-section {
@@ -521,20 +659,20 @@
 .project-title {
   font-size: 2.2rem;
   font-weight: 700;
-  color: var(--color-ink);
+  color: var(--base-400);
   line-height: 1.15;
 }
 
 .project-subtitle {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  color: var(--color-terracotta);
+  color: var(--accent);
   margin-top: -4px;
 }
 
 .project-summary {
   font-size: 1.02rem;
-  color: var(--color-ink);
+  color: var(--base-400);
   line-height: 1.6;
 }
 
@@ -546,11 +684,11 @@
 }
 
 .tech-tag-pill {
-  background-color: var(--color-paper-light);
-  color: var(--color-ink);
-  border: 1.5px solid var(--color-ink);
+  background-color: var(--pill);
+  color: var(--base-400);
+  border: 1px solid var(--base-200);
   border-radius: 999px;
-  padding: 3px 12px;
+  padding: 4px 12px;
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -560,11 +698,6 @@
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 8px;
-}
-
-.project-link-btn {
-  padding: 7px 18px;
-  font-size: 0.95rem;
 }
 
 /* Slider Controls */
@@ -581,58 +714,44 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-pill-yellow);
-  color: var(--color-ink);
-  border: 2.5px solid var(--color-ink);
+  background-color: var(--pill);
+  color: var(--base-400);
+  border: 2px solid var(--base-400);
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 2px 2px 0px var(--color-ink);
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
 .slider-arrow-btn:hover {
-  background-color: var(--color-pill-yellow-hover);
+  background-color: var(--pill-hover);
   transform: translate(-1px, -1px);
-}
-
-.slider-arrow-btn:active {
-  transform: translate(1px, 1px);
-}
-
-.dot-pagination {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 .pagination-dot {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background-color: var(--color-paper-dark);
-  border: 2px solid var(--color-ink);
+  background-color: var(--base-200);
+  border: 1.5px solid var(--base-400);
   cursor: pointer;
   padding: 0;
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .pagination-dot.active {
-  background-color: var(--color-terracotta);
+  background-color: var(--accent);
   transform: scale(1.35);
-  box-shadow: 1px 1px 0px var(--color-ink);
 }
 
 .swipe-hint {
   font-size: 1.15rem;
-  color: var(--color-ink-muted);
+  color: var(--base-350);
   margin-top: 10px;
 }
 
-/* ==========================================================================
-   JOURNEY PAGE (Timeline & Toolbox)
-   ========================================================================== */
+/* Journey Page */
 .journey-page-container {
-  background-color: var(--color-paper);
+  background-color: var(--base-100);
 }
 
 .journey-content-wrapper {
@@ -645,7 +764,7 @@
 .journey-tagline {
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--color-terracotta);
+  color: var(--accent);
 }
 
 .journey-title-block {
@@ -655,15 +774,15 @@
 .journey-main-heading {
   font-size: 3.2rem;
   font-weight: 700;
-  color: var(--color-ink);
+  color: var(--base-400);
   line-height: 1;
   margin-bottom: 8px;
 }
 
 .journey-intro-text {
   font-size: 1.1rem;
-  color: var(--color-ink-dim);
-  font-weight: 600;
+  color: var(--base-350);
+  font-weight: 500;
   max-width: 600px;
 }
 
@@ -680,13 +799,12 @@
   top: 35px;
   bottom: 40px;
   left: 28px;
-  width: 3px;
-  background-color: #BAC2B1;
-  border-radius: 2px;
+  width: 2px;
+  background-color: var(--base-200);
   z-index: 1;
 }
 
-/* Timeline Step Cards */
+/* Timeline Step Cards: Dimmed steps use var(--base-300), active use var(--base-400) */
 .journey-step-card {
   position: relative;
   display: flex;
@@ -698,34 +816,24 @@
 }
 
 .journey-step-card:focus-visible {
-  outline: 3px solid var(--color-terracotta);
+  outline: 2px solid var(--base-400);
   border-radius: 14px;
 }
 
-/* Contrast States: Active vs Dimmed */
 .journey-step-card.step-active .step-body-content {
-  background-color: #FAFBF7;
-  border-color: var(--color-ink);
-  box-shadow: 4px 6px 0px var(--color-ink), 0 10px 20px rgba(31, 42, 36, 0.1);
+  background-color: var(--base-100);
+  border-color: var(--base-400);
+  box-shadow: 2px 4px 0px var(--base-400), 0 8px 16px rgba(12, 9, 8, 0.08);
   transform: translateY(-2px);
-  color: var(--color-ink);
-}
-
-.journey-step-card.step-dimmed {
-  opacity: 0.88;
+  color: var(--base-400);
 }
 
 .journey-step-card.step-dimmed .step-body-content {
-  background-color: rgba(250, 251, 247, 0.72);
-  border-color: #9AA79E;
-  color: var(--color-ink-dim);
+  background-color: var(--base-100);
+  border-color: var(--base-200);
+  color: var(--base-300); /* WCAG AA >= 4.5:1 on base-100 */
 }
 
-.journey-step-card.step-dimmed:hover {
-  opacity: 1;
-}
-
-/* Step marker */
 .step-marker-wrapper {
   position: relative;
   width: 56px;
@@ -741,136 +849,60 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background-color: var(--color-pill-yellow);
-  border: 2px solid var(--color-ink);
+  background-color: var(--pill);
+  border: 1.5px solid var(--base-400);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.45rem;
   font-weight: 700;
-  color: var(--color-ink);
-  box-shadow: 2px 2px 0px var(--color-ink);
+  color: var(--base-400);
 }
 
 .step-active .step-number-pill {
-  background-color: var(--color-terracotta);
-  color: #FAFBF7;
+  background-color: var(--accent);
+  color: var(--base-100);
 }
 
-/* Hand-drawn active ring SVG */
-.hand-drawn-ring-svg {
-  position: absolute;
-  top: -7px;
-  left: -7px;
-  width: 70px;
-  height: 70px;
-  pointer-events: none;
-  animation: drawRing 0.4s ease-out forwards;
-}
-
-@keyframes drawRing {
-  from {
-    opacity: 0;
-    transform: scale(0.85) rotate(-15deg);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
+.hand-drawn-ring-svg path {
+  stroke: var(--accent);
 }
 
 .step-body-content {
   flex: 1;
   padding: 22px 26px;
-  border: 2.5px solid var(--color-ink);
+  border: 2px solid var(--base-200);
   border-radius: 14px;
   transition: all 0.25s ease;
-}
-
-.step-header {
-  margin-bottom: 14px;
 }
 
 .step-category-label {
   display: block;
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--color-terracotta);
+  color: var(--accent);
 }
 
 .step-title {
   font-size: 1.55rem;
-  font-weight: 800;
+  font-weight: 700;
   color: inherit;
   line-height: 1.25;
 }
 
-.step-items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.step-item-entry {
-  border-top: 1px dashed #BAC2B1;
-  padding-top: 12px;
-}
-
-.step-item-entry:first-child {
-  border-top: none;
-  padding-top: 0;
-}
-
-.item-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.item-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: inherit;
-}
-
 .item-badge-pill {
-  background-color: var(--color-pill-yellow);
-  color: var(--color-ink);
-  border: 1.5px solid var(--color-ink);
+  background-color: var(--pill);
+  color: var(--base-400);
+  border: 1px solid var(--base-200);
   border-radius: 999px;
   padding: 2px 10px;
   font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.item-desc {
-  font-size: 0.96rem;
-  color: inherit;
-  margin-top: 4px;
-  font-weight: 600;
-}
-
-.item-details-bullets {
-  margin-top: 6px;
-  padding-left: 20px;
-  font-size: 0.92rem;
-  color: inherit;
-  line-height: 1.5;
-}
-
-/* Toolbox Grid */
-.toolbox-categories-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
-  margin-top: 10px;
+  font-weight: 700;
 }
 
 .toolbox-category-box {
-  background-color: var(--color-paper-light);
-  border: 2px solid var(--color-ink);
+  background-color: var(--base-200);
+  border: 1.5px solid var(--base-200);
   border-radius: 10px;
   padding: 14px;
 }
@@ -878,35 +910,29 @@
 .toolbox-cat-name {
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--color-terracotta);
+  color: var(--accent);
   margin-bottom: 8px;
 }
 
-.toolbox-tags-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 .toolbox-skill-tag {
-  background-color: #FAFBF7;
-  color: var(--color-ink);
-  border: 1.5px solid var(--color-ink);
+  background-color: var(--base-100);
+  color: var(--base-400);
+  border: 1px solid var(--base-300);
   border-radius: 6px;
   padding: 3px 8px;
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* ==========================================================================
-   PHONE MODAL (ABOUT & CONTACT)
+   PHONE MODAL (ABOUT & CONTACT) - RECOLORED TO BASE-100 / BASE-200
    ========================================================================== */
 .phone-modal-backdrop {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(31, 42, 36, 0.65);
+  background-color: rgba(12, 9, 8, 0.6);
   backdrop-filter: blur(5px);
   z-index: 200;
   display: flex;
@@ -942,90 +968,40 @@
   }
 }
 
-/* Phone Device Chassis */
 .phone-device-chassis {
   position: relative;
   width: 100%;
-  background-color: #2E3A33;
-  border: 4px solid var(--color-ink);
+  background-color: var(--base-350);
+  border: 3px solid var(--base-400);
   border-radius: 40px;
   box-shadow: var(--shadow-phone-modal);
   padding: 14px 14px 20px 14px;
   overflow: hidden;
 }
 
-/* Screen crack overlay */
-.phone-crack-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 20;
-}
-
-/* Notch Bar */
-.phone-notch-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  height: 24px;
-  margin-bottom: 8px;
-}
-
-.phone-speaker-slot {
-  width: 54px;
-  height: 5px;
-  background-color: #1F2A24;
-  border-radius: 3px;
-}
-
-.phone-camera-lens {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #1F2A24;
-  border: 1px solid #44544A;
-}
-
-/* Screen Content Area */
 .phone-screen-content {
-  background-color: #FAFBF7;
+  background-color: var(--base-100);
   border-radius: 28px;
   overflow: hidden;
-  border: 2px solid var(--color-ink);
+  border: 1.5px solid var(--base-200);
   min-height: 490px;
   max-height: 72vh;
   display: flex;
   flex-direction: column;
 }
 
-/* Phone Bottom Home Indicator */
-.phone-home-indicator {
-  width: 110px;
-  height: 4px;
-  background-color: #FAFBF7;
-  border-radius: 2px;
-  margin: 12px auto 0 auto;
-}
-
-/* ==========================================================================
-   NOTES APP SCREEN (ABOUT)
-   ========================================================================== */
 .notes-app-screen {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #FFFDE7;
-  position: relative;
+  background-color: var(--base-100);
 }
 
 .notes-app-header {
   height: 52px;
   padding: 0 16px;
-  background-color: #FFF9C4;
-  border-bottom: 2px solid #E6D98E;
+  background-color: var(--base-200);
+  border-bottom: 1.5px solid var(--base-200);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1035,7 +1011,7 @@
 .notes-switch-btn {
   background: none;
   border: none;
-  color: var(--color-terracotta);
+  color: var(--accent);
   font-weight: 700;
   font-size: 1.15rem;
   cursor: pointer;
@@ -1044,87 +1020,48 @@
 .notes-app-title {
   font-size: 1.6rem;
   font-weight: 700;
-  color: var(--color-ink);
+  color: var(--base-400);
 }
 
 .notes-scrollable-body {
   flex: 1;
   overflow-y: auto;
   padding: 18px 20px 30px 20px;
-  background-image: repeating-linear-gradient(
-    transparent,
-    transparent 27px,
-    #E8E5BA 28px
-  );
   line-height: 28px;
 }
 
 .notes-date-stamp {
   font-size: 1.1rem;
-  color: var(--color-ink-muted);
+  color: var(--base-350);
   text-align: center;
   margin-bottom: 14px;
-}
-
-.notes-photo-slot {
-  display: flex;
-  justify-content: center;
-  margin: 10px 0 20px 0;
-}
-
-.notes-avatar-img {
-  width: 155px;
-  height: auto;
-  display: block;
-}
-
-.notes-fields-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.notes-field-row {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.4;
 }
 
 .field-label {
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--color-terracotta);
+  color: var(--accent);
 }
 
 .field-value {
   font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-ink);
+  font-weight: 600;
+  color: var(--base-400);
 }
 
-.notes-footer-doodle {
-  margin-top: 24px;
-  text-align: center;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-ink-dim);
-}
-
-/* ==========================================================================
-   MAIL APP SCREEN (CONTACT)
-   ========================================================================== */
+/* Mail App Screen */
 .mail-app-screen {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #FAFBF7;
+  background-color: var(--base-100);
 }
 
 .mail-app-header {
   height: 52px;
   padding: 0 16px;
-  background-color: var(--color-paper-light);
-  border-bottom: 2px solid var(--color-ink);
+  background-color: var(--base-200);
+  border-bottom: 1.5px solid var(--base-200);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1133,22 +1070,16 @@
 .mail-cancel-btn {
   background: none;
   border: none;
-  color: var(--color-terracotta);
+  color: var(--accent);
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
 }
 
-.mail-app-title {
-  font-size: 1.55rem;
-  font-weight: 700;
-  color: var(--color-ink);
-}
-
 .mail-send-btn {
-  background-color: var(--color-terracotta);
-  color: #FAFBF7;
-  border: 1.5px solid var(--color-ink);
+  background-color: var(--accent);
+  color: var(--base-100);
+  border: none;
   border-radius: 999px;
   padding: 4px 14px;
   font-size: 1.15rem;
@@ -1156,102 +1087,25 @@
   cursor: pointer;
 }
 
-.mail-send-btn:hover {
-  background-color: var(--color-terracotta-hover);
-}
-
-.mail-form-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 14px 16px;
-  gap: 10px;
-}
-
 .mail-input-row {
-  display: flex;
-  align-items: center;
-  border-bottom: 1.5px solid #D5DBD0;
-  padding-bottom: 6px;
+  border-bottom: 1px solid var(--base-200);
 }
 
 .mail-label {
-  width: 60px;
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: var(--color-ink-muted);
-}
-
-.mail-to-recipient {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mail-input {
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-ink);
-}
-
-.mail-input-readonly {
-  color: var(--color-ink);
-  font-weight: 700;
+  color: var(--base-350);
 }
 
 .copy-email-btn {
-  background-color: var(--color-pill-yellow);
-  border: 1.5px solid var(--color-ink);
+  background-color: var(--pill);
+  border: 1px solid var(--base-300);
   border-radius: 6px;
   padding: 2px 8px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--color-ink);
+  color: var(--base-400);
   cursor: pointer;
 }
 
-.copy-email-btn:hover {
-  background-color: var(--color-pill-yellow-hover);
-}
-
-.mail-select {
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--color-ink);
-  cursor: pointer;
-}
-
-.mail-body-row {
-  flex: 1;
-  display: flex;
-}
-
-.mail-textarea {
-  width: 100%;
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
-  resize: none;
-  font-family: var(--font-body);
-  font-size: 0.96rem;
-  color: var(--color-ink);
-  line-height: 1.5;
-  padding-top: 6px;
-}
-
-/* Buttons below phone */
 .phone-bottom-actions-row {
   display: flex;
   flex-wrap: wrap;
@@ -1261,56 +1115,26 @@
   margin-top: 14px;
 }
 
-.bottom-action-btn {
-  padding: 8px 16px;
-  font-size: 0.88rem;
-}
-
 /* ==========================================================================
-   RESPONSIVE DESIGN & MOBILE (< 700px, 360px)
+   RESPONSIVE DESIGN (< 700px, 360px)
    ========================================================================== */
 @media (max-width: 699px) {
   .site-header {
-    height: auto;
-    padding: 10px 8px;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    box-sizing: border-box;
+    height: 60px;
   }
 
-  .header-nav {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-
-  .nav-pills-row {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
-    width: 100%;
-    max-width: 350px;
-    margin: 0 auto;
-    flex-wrap: wrap;
-    box-sizing: border-box;
-  }
-
-  .nav-pill {
-    padding: 4px 7px;
-    font-size: 0.74rem;
-    gap: 3px;
-    box-shadow: 1.5px 1.5px 0px var(--color-ink);
-  }
-
-  .nav-pill svg {
-    width: 13px;
-    height: 13px;
+  .header-brand {
+    left: 18px;
+    top: 16px;
   }
 
   .brand-signature {
-    font-size: 1.85rem;
+    font-size: 28px;
+  }
+
+  .header-nav {
+    top: 14px;
+    right: 18px;
   }
 
   .desk-surface-stage {
@@ -1319,7 +1143,8 @@
 
   .desk-hero-minimal {
     width: 90%;
-    top: 42%;
+    top: 45%;
+    left: 50%;
   }
 
   /* 2 centered lines on mobile */
@@ -1329,7 +1154,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 0.94rem;
+    font-size: 14px;
     line-height: 1.35;
     gap: 2px;
   }
@@ -1348,7 +1173,7 @@
   }
 
   .hero-cycling-word {
-    font-size: 2.1em;
+    font-size: 32px;
     vertical-align: baseline;
   }
 
@@ -1359,59 +1184,6 @@
     transform-origin: bottom left;
   }
 
-  .desk-doodle-container {
-    bottom: 12px;
-    left: 12px;
-  }
-
-  .doodle-speech-bubble {
-    white-space: normal;
-    max-width: 200px;
-    bottom: 84px;
-  }
-
-  .project-frame-card {
-    padding: 18px 14px;
-  }
-
-  .project-title {
-    font-size: 1.75rem;
-  }
-
-  .project-subtitle {
-    font-size: 0.98rem;
-  }
-
-  .project-summary {
-    font-size: 0.95rem;
-  }
-
-  .journey-timeline::before {
-    left: 20px;
-  }
-
-  .step-marker-wrapper {
-    width: 42px;
-    height: 42px;
-  }
-
-  .step-number-pill {
-    width: 36px;
-    height: 36px;
-    font-size: 1.2rem;
-  }
-
-  .hand-drawn-ring-svg {
-    width: 54px;
-    height: 54px;
-    top: -6px;
-    left: -6px;
-  }
-
-  .step-body-content {
-    padding: 16px 14px;
-  }
-
   .phone-modal-backdrop {
     padding: 0 8px 10px 8px;
   }
@@ -1419,44 +1191,20 @@
   .phone-modal-wrapper {
     max-width: 100%;
   }
-
-  .phone-device-chassis {
-    border-radius: 28px;
-    padding: 10px 10px 14px 10px;
-  }
-
-  .phone-screen-content {
-    border-radius: 20px;
-    min-height: 440px;
-    max-height: 68vh;
-  }
 }
 
 /* Ultra small viewports (360px) */
 @media (max-width: 360px) {
   .hero-single-line {
-    font-size: 0.92rem;
+    font-size: 13px;
   }
 
   .hero-cycling-word {
-    font-size: 1.7em;
-  }
-
-  .nav-pill {
-    padding: 5px 9px;
-    font-size: 0.78rem;
-  }
-
-  .project-actions-row {
-    flex-direction: column;
+    font-size: 28px;
   }
 
   .phone-bottom-actions-row {
     flex-direction: column;
-    width: 100%;
-  }
-
-  .bottom-action-btn {
     width: 100%;
   }
 }
