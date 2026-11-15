@@ -24,10 +24,10 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ onNavigate }) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Filter objects for mobile (show only 4 objects under 700px)
+  // Filter objects for mobile: only laptop, notebook, plant, coffee cup, headphones under 700px
   const visibleObjects = deskObjects.filter((obj) => (isMobile ? obj.showOnMobile : true));
 
-  // Handle object interaction (optional quick shortcut click)
+  // Quick interactive shortcuts when clicking objects
   const handleObjectClick = (obj: DeskObjectConfig) => {
     if (obj.id === 'laptop') {
       onNavigate('work');
@@ -39,41 +39,41 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ onNavigate }) => {
   };
 
   return (
-    <section className="desk-surface" aria-label="Interactive scrapbook desk workspace">
-      {/* Centered Hero Message */}
+    <section className="desk-surface-stage" aria-label="Interactive scrapbook desk workspace">
+      {/* Centered Single-line Hero Message */}
       <HeroLine />
 
-      {/* Scattered Desk Objects */}
-      <div className="desk-objects-layer" aria-hidden="true">
+      {/* Scattered Desk Objects Layer */}
+      <div className="desk-objects-stage-layer" aria-hidden="true">
         {visibleObjects.map((obj) => {
-          // Adjust responsive positioning
+          const posX = isMobile && obj.mobileX !== undefined ? obj.mobileX : obj.x;
+          const posY = isMobile && obj.mobileY !== undefined ? obj.mobileY : obj.y;
+          const rot = isMobile && obj.mobileRotation !== undefined ? obj.mobileRotation : obj.rotation;
+          const widthVw = isMobile && obj.mobileWidthVw !== undefined ? obj.mobileWidthVw : obj.widthVw;
+
           const style: React.CSSProperties = {
-            left: `${obj.x}%`,
-            top: `${obj.y}%`,
-            '--base-rot': `${obj.rotation}deg`,
+            left: `${posX}%`,
+            top: `${posY}%`,
+            width: `${widthVw}vw`,
+            '--base-rot': `${rot}deg`,
             zIndex: obj.zIndex || 2,
-            width: isMobile ? Math.min(obj.size * 0.72, 180) : obj.size,
           } as React.CSSProperties;
 
           return (
             <div
               key={obj.id}
-              className={`desk-object desk-object-${obj.id}`}
+              className={`desk-object-cutout desk-object-${obj.id}`}
               style={style}
               onClick={() => handleObjectClick(obj)}
-              title={`${obj.name}`}
+              title={obj.name}
             >
-              <div className="desk-object-inner torn-paper-edge">
-                <img
-                  src={obj.src}
-                  alt={obj.alt} /* empty alt for decorative desk items per a11y specs */
-                  loading="lazy"
-                  width={obj.size}
-                  height={Math.round(obj.size * 0.85)}
-                  className="desk-object-img"
-                  draggable={false}
-                />
-              </div>
+              <img
+                src={obj.src}
+                alt={obj.alt}
+                loading="lazy"
+                className="desk-cutout-img"
+                draggable={false}
+              />
             </div>
           );
         })}

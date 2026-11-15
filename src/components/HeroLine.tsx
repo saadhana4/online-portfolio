@@ -46,36 +46,23 @@ export const HeroLine: React.FC = () => {
   const activeWord = reducedMotion ? 'sees' : WORDS[index];
 
   return (
-    <div className="desk-hero-card" role="region" aria-label="Introduction hero">
-      <h1 className="hero-heading">
-        <span className="hero-greeting">Hey, I'm Saadhana and I build software that</span>{' '}
-        <span className="cycling-word-wrapper">
+    <div className="desk-hero-minimal" role="region" aria-label="Introduction hero">
+      <h1 className="hero-single-line">
+        <span className="hero-lead-text">Hey, I'm Saadhana and I build software that</span>{' '}
+        <span className="hero-word-slot">
           <span
             key={activeWord}
-            className="cycling-word font-handwriting"
+            className="hero-cycling-word font-handwriting"
             aria-live="polite"
             aria-atomic="true"
           >
             {activeWord}
           </span>
-          {/* Hand-drawn squiggly underline SVG */}
-          <svg
-            className="hero-underline-svg"
-            viewBox="0 0 120 18"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path
-              d="M3 12 C25 4, 45 16, 68 8 C88 2, 102 14, 117 7"
-              stroke="#C8553D"
-              strokeWidth="3.2"
-              strokeLinecap="round"
-            />
-          </svg>
         </span>
       </h1>
-      <p className="hero-subtext">
+
+      {/* Accessible subtitle for screen readers and SEO (not visible on page) */}
+      <p className="sr-only">
         M.Tech Integrated CSE student exploring Computer Vision, Healthcare Tech &amp; Full-Stack Systems.
       </p>
     </div>

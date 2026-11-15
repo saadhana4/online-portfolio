@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" fill="none">
+  <!-- Hand-drawn Craft Scissors -->
+  <!-- Blade 1 -->
+  <path d="M72 75 L145 28 C147 27, 148 30, 146 32 L85 86 Z" fill="#DCE1D5" stroke="#1F2A24" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Blade 2 -->
+  <path d="M68 85 L142 125 C145 127, 147 124, 144 122 L75 72 Z" fill="#FAFBF7" stroke="#1F2A24" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- Center Pivot Screw -->
+  <circle cx="75" cy="78" r="4.5" fill="#E5D38A" stroke="#1F2A24" stroke-width="2"/>
+  <line x1="73" y1="78" x2="77" y2="78" stroke="#1F2A24" stroke-width="1.2"/>
+
+  <!-- Left Handle (Terracotta) -->
+  <path d="M74 72 L45 55 C35 50, 15 60, 20 78 C25 92, 45 85, 52 75 Z" fill="#C8553D" stroke="#1F2A24" stroke-width="2.8" stroke-linejoin="round"/>
+  <!-- Finger loop hole 1 -->
+  <ellipse cx="28" cy="72" rx="10" ry="8" fill="#E9EBDD" stroke="#1F2A24" stroke-width="2.2" transform="rotate(-15 28 72)"/>
+
+  <!-- Right Handle (Terracotta) -->
+  <path d="M72 82 L42 105 C32 112, 14 100, 20 84 C24 72, 42 78, 52 82 Z" fill="#C8553D" stroke="#1F2A24" stroke-width="2.8" stroke-linejoin="round"/>
+  <!-- Finger loop hole 2 -->
+  <ellipse cx="28" cy="94" rx="10" ry="8" fill="#E9EBDD" stroke="#1F2A24" stroke-width="2.2" transform="rotate(15 28 94)"/>
+</svg>

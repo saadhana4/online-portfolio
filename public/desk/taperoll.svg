@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" fill="none">
+  <!-- Hand-drawn Washi / Masking Tape Roll -->
+  <!-- Outer Tape Ring -->
+  <ellipse cx="60" cy="55" rx="52" ry="34" fill="#F3E3A3" stroke="#1F2A24" stroke-width="3" stroke-linecap="round"/>
+  <!-- Top Thickness / Pattern -->
+  <ellipse cx="60" cy="51" rx="52" ry="34" fill="#F8EBB6" stroke="#1F2A24" stroke-width="2"/>
+  
+  <!-- Tape Pattern stripes on roll -->
+  <path d="M16 48 Q35 70 55 64" stroke="#C8553D" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <path d="M40 32 Q65 60 88 56" stroke="#88B49E" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <path d="M70 24 Q95 50 110 44" stroke="#C8553D" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
+
+  <!-- Inner Cardboard Core Hole -->
+  <ellipse cx="60" cy="51" rx="26" ry="17" fill="#E8D5B5" stroke="#1F2A24" stroke-width="2.5"/>
+  <ellipse cx="60" cy="54" rx="24" ry="15" fill="#D4BE9B" stroke="#1F2A24" stroke-width="1.8"/>
+
+  <!-- Tape Strip Peeling Off -->
+  <path d="M102 54 L118 78 L96 82 L82 62 Z" fill="#F3E3A3" stroke="#1F2A24" stroke-width="2.2" stroke-linejoin="round"/>
+  <!-- Torn edge of peeling tape -->
+  <path d="M118 78 L114 80 L116 82 L96 82" stroke="#1F2A24" stroke-width="2" stroke-linecap="round"/>
+</svg>

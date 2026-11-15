@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 140" width="160" height="140" fill="none">
+  <!-- Hand-drawn SD Memory Cards -->
+  <!-- Card 1 (Back card, slightly rotated) -->
+  <g transform="rotate(18 90 70)">
+    <!-- Body with notched top right corner -->
+    <path d="M42 22 L86 22 L96 34 L96 90 C96 94, 93 96, 88 96 L42 96 C38 96, 35 94, 35 90 L35 28 C35 24, 38 22, 42 22 Z" fill="#2E3A33" stroke="#1F2A24" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Yellow label -->
+    <rect x="42" y="38" width="46" height="36" rx="4" fill="#F3E3A3" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="65" y="54" font-family="'Nunito', sans-serif" font-size="8" font-weight="bold" fill="#1F2A24" text-anchor="middle">64GB</text>
+    <text x="65" y="65" font-family="'Nunito', sans-serif" font-size="6" fill="#1F2A24" text-anchor="middle">SDXC I</text>
+    <!-- Gold connector pins -->
+    <rect x="40" y="24" width="4" height="8" rx="1" fill="#E5D38A"/>
+    <rect x="47" y="24" width="4" height="8" rx="1" fill="#E5D38A"/>
+    <rect x="54" y="24" width="4" height="8" rx="1" fill="#E5D38A"/>
+    <rect x="61" y="24" width="4" height="8" rx="1" fill="#E5D38A"/>
+  </g>
+
+  <!-- Card 2 (Front card, contrasting color) -->
+  <g transform="rotate(-8 60 70)">
+    <!-- Body -->
+    <path d="M22 24 L68 24 L78 36 L78 94 C78 98, 75 100, 70 100 L22 100 C18 100, 15 98, 15 94 L15 30 C15 26, 18 24, 22 24 Z" fill="#C8553D" stroke="#1F2A24" stroke-width="2.6" stroke-linejoin="round"/>
+    <!-- White label -->
+    <rect x="22" y="40" width="48" height="38" rx="4" fill="#FAFBF7" stroke="#1F2A24" stroke-width="1.5"/>
+    <text x="46" y="56" font-family="'Nunito', sans-serif" font-size="8.5" font-weight="bold" fill="#1F2A24" text-anchor="middle">128GB</text>
+    <text x="46" y="68" font-family="'Caveat', cursive, sans-serif" font-size="11" font-weight="bold" fill="#C8553D" text-anchor="middle">data &amp; code</text>
+    <!-- Lock switch -->
+    <rect x="13" y="44" width="4" height="6" rx="1" fill="#F3E3A3" stroke="#1F2A24" stroke-width="1"/>
+    <!-- Gold connector pins -->
+    <rect x="20" y="26" width="4" height="8" rx="1" fill="#E5D38A"/>
+    <rect x="27" y="26" width="4" height="8" rx="1" fill="#E5D38A"/>
+    <rect x="34" y="26" width="4" height="8" rx="1" fill="#E5D38A"/>
+    <rect x="41" y="26" width="4" height="8" rx="1" fill="#E5D38A"/>
+    <rect x="48" y="26" width="4" height="8" rx="1" fill="#E5D38A"/>
+  </g>
+</svg>

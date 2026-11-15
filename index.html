@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <title>Saadhana Karthikeyan — Software Developer Portfolio</title>
-    <meta name="description" content="Personal portfolio of Saadhana Karthikeyan. Playful, handmade scrapbook desk featuring software engineering projects, computer vision, healthcare tech, and AI/ML." />
+    <meta name="description" content="M.Tech Integrated CSE student exploring Computer Vision, Healthcare Tech &amp; Full-Stack Systems." />
     <meta name="author" content="Saadhana Karthikeyan" />
     <meta name="keywords" content="Saadhana Karthikeyan, Portfolio, Software Engineer, React, TypeScript, FastAPI, Computer Vision, MediaPipe, Python, Healthcare Tech" />
     <meta name="theme-color" content="#E9EBDD" />
@@ -15,13 +15,13 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://saadhana-karthikeyan.vercel.app/" />
     <meta property="og:title" content="Saadhana Karthikeyan — Software Developer Portfolio" />
-    <meta property="og:description" content="A playful, handmade messy-desk scrapbook portfolio. Building software that sees, cares, and maps." />
+    <meta property="og:description" content="M.Tech Integrated CSE student exploring Computer Vision, Healthcare Tech &amp; Full-Stack Systems." />
     <meta property="og:image" content="/desk/laptop.svg" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Saadhana Karthikeyan — Software Developer Portfolio" />
-    <meta name="twitter:description" content="A playful, handmade messy-desk scrapbook portfolio. Building software that sees, cares, and maps." />
+    <meta name="twitter:description" content="M.Tech Integrated CSE student exploring Computer Vision, Healthcare Tech &amp; Full-Stack Systems." />
     <meta name="twitter:image" content="/desk/laptop.svg" />
 
     <!-- Google Fonts Preconnect & Stylesheets -->
@@ -30,10 +30,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Nunito:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <!-- Global SVG Filter Definitions for Scrapbook Effects -->
+    <!-- Global SVG Filter Definitions for Scrapbook & Sticker Effects -->
     <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <!-- Torn paper edge displacement filter -->
+        <!-- Sticker Cutout Edge Filter (Dilates alpha 3px, floods white, roughens with displacement map, merges original, soft drop shadow) -->
+        <filter id="sticker-edge" x="-30%" y="-30%" width="160%" height="160%">
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feFlood flood-color="#FAFBF7" flood-opacity="1" result="whiteFlood" />
+          <feComposite in="whiteFlood" in2="dilatedAlpha" operator="in" result="whiteBorder" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" seed="5" />
+          <feDisplacementMap in="whiteBorder" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" result="roughenedBorder" />
+          <feMerge result="stickerMerged">
+            <feMergeNode in="roughenedBorder" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+          <feDropShadow in="stickerMerged" dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.18" />
+        </filter>
+
+        <!-- Torn paper edge displacement filter for cards and modals -->
         <filter id="torn-paper-edge" x="-10%" y="-10%" width="120%" height="120%">
           <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" seed="3" />
           <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G" />

@@ -93,85 +93,226 @@
 .nav-pill {
   font-size: 0.9rem;
   padding: 7px 16px;
+  position: relative;
 }
 
 /* ==========================================================================
-   DESK SURFACE & HERO
+   WORK PILL: HAMMER HITS THE WORD ANIMATION
    ========================================================================== */
-.desk-surface {
-  flex: 1;
-  position: relative;
-  min-height: calc(100vh - var(--header-height));
-  min-height: calc(100dvh - var(--header-height));
-  display: flex;
+.hammer-icon-svg {
+  transform-origin: 22% 88%;
+  display: inline-block;
+  vertical-align: middle;
+  transition: transform 0.2s ease;
+}
+
+.work-letters-wrapper {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  padding: 40px 20px;
+  transform-origin: center center;
 }
 
-/* Hero Center Card */
-.desk-hero-card {
+.work-char {
+  display: inline-block;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+/* Keyframe Sequence for Hammer Strike */
+.work-pill.is-hitting {
+  animation: pillNudgeDown 0.75s ease-out forwards;
+}
+
+@keyframes pillNudgeDown {
+  0%, 36% {
+    transform: translateY(0);
+  }
+  37%, 46% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.work-pill.is-hitting .hammer-icon-svg {
+  animation: hammerWindupAndStrike 0.75s cubic-bezier(0.12, 0.8, 0.32, 1) forwards;
+}
+
+@keyframes hammerWindupAndStrike {
+  0% {
+    transform: rotate(0deg);
+  }
+  /* 0 - 200ms: Wind up rotating -40deg */
+  26% {
+    transform: rotate(-42deg);
+  }
+  /* 200 - 280ms: Swings down fast to +70deg onto the word */
+  37% {
+    transform: rotate(72deg) translate(3px, 1px);
+  }
+  /* Impact hold */
+  46% {
+    transform: rotate(68deg) translate(2px, 1px);
+  }
+  /* 280 - 650ms: Lifts back to 0deg */
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.work-pill.is-hitting .work-letters-wrapper {
+  animation: lettersImpactSquash 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes lettersImpactSquash {
+  0%, 36% {
+    transform: scale(1, 1);
+    letter-spacing: normal;
+  }
+  /* Impact at ~280ms: squashes flat */
+  37% {
+    transform: scale(1.18, 0.4);
+    letter-spacing: 0.22em;
+  }
+  48% {
+    transform: scale(1.12, 0.55);
+    letter-spacing: 0.16em;
+  }
+  /* Spring back with slight overshoot */
+  75% {
+    transform: scale(0.98, 1.06);
+    letter-spacing: 0.02em;
+  }
+  100% {
+    transform: scale(1, 1);
+    letter-spacing: normal;
+  }
+}
+
+/* Letter 'o' flattened like "W r k" */
+.work-pill.is-hitting .char-o {
+  animation: charOFlatten 0.75s ease-out forwards;
+}
+
+@keyframes charOFlatten {
+  0%, 36% {
+    opacity: 1;
+    transform: scale(1, 1);
+  }
+  37%, 48% {
+    opacity: 0.25;
+    transform: scale(1.3, 0.25);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1, 1);
+  }
+}
+
+/* Gentle matching hover animations for other pills */
+.journey-pill:hover .compass-icon-svg {
+  animation: compassSpin 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes compassSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.about-pill:hover .note-icon-svg {
+  transform: rotate(-10deg) scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+.contact-pill:hover .mail-icon-svg {
+  transform: translateY(-2px) scale(1.08);
+  transition: transform 0.2s ease;
+}
+
+/* ==========================================================================
+   DESK SURFACE STAGE (100vw x 100svh, min-height 560px)
+   ========================================================================== */
+.desk-surface-stage {
   position: relative;
+  width: 100vw;
+  min-height: 560px;
+  height: calc(100svh - var(--header-height));
+  overflow: hidden;
+  background-color: var(--color-paper);
+}
+
+/* 1) HERO TEXT: SINGLE MINIMAL LINE CENTERED AT (50%, 45%) */
+.desk-hero-minimal {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  transform: translate(-50%, -50%);
   z-index: 10;
-  max-width: 680px;
+  pointer-events: none; /* Never blocks desk objects */
   text-align: center;
-  padding: 32px 36px;
-  background-color: rgba(250, 251, 247, 0.92);
-  border: 2.5px solid var(--color-ink);
-  border-radius: 18px;
-  box-shadow: 4px 6px 0px var(--color-ink), 0 16px 36px rgba(31, 42, 36, 0.12);
-  transform: rotate(-0.5deg);
+  width: 90%;
+  max-width: 920px;
 }
 
-.hero-heading {
-  font-size: 2.1rem;
-  font-weight: 800;
+.hero-single-line {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: clamp(0.9rem, 1.1vw, 1.05rem);
   color: var(--color-ink);
-  line-height: 1.35;
-  margin-bottom: 12px;
+  line-height: 1.5;
+  white-space: nowrap; /* Stays on one line 700px and wider */
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.35em;
+  margin: 0;
+  padding: 0;
 }
 
-.hero-greeting {
+.hero-lead-text {
   display: inline;
 }
 
-.cycling-word-wrapper {
+.hero-word-slot {
   display: inline-block;
-  position: relative;
-  margin-left: 6px;
-  min-width: 76px;
-  text-align: center;
+  min-width: 3.4em; /* Reserves width of longest word so line never jumps */
+  text-align: left;
+  vertical-align: baseline;
 }
 
-.cycling-word {
+.hero-cycling-word {
   display: inline-block;
-  font-size: 2.6rem;
+  font-family: var(--font-handwriting);
+  font-size: 1.9em; /* about 1.9x the body size */
   font-weight: 700;
   color: var(--color-terracotta);
   line-height: 1;
-  animation: wordCycleFade 3.2s infinite ease-in-out;
+  animation: wordSoftSwap 3.2s infinite ease-in-out;
 }
 
-.hero-underline-svg {
-  position: absolute;
-  left: 0;
-  bottom: -10px;
-  width: 100%;
-  height: 14px;
-  pointer-events: none;
+@keyframes wordSoftSwap {
+  0%, 75% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  85% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  90% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.hero-subtext {
-  font-size: 1.05rem;
-  color: var(--color-ink-dim);
-  font-weight: 600;
-  margin-top: 10px;
-  line-height: 1.45;
-}
-
-/* Scattered Desk Objects Layer */
-.desk-objects-layer {
+/* ==========================================================================
+   2) DESK OBJECTS CUTOUTS (NO WHITE SQUARES)
+   ========================================================================== */
+.desk-objects-stage-layer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -179,39 +320,27 @@
   pointer-events: none;
 }
 
-.desk-object {
+.desk-object-cutout {
   position: absolute;
   transform: translate(-50%, -50%) rotate(var(--base-rot));
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-origin: center center;
   pointer-events: auto;
   cursor: pointer;
   user-select: none;
+  transition: transform 0.25s ease;
 }
 
-.desk-object:hover {
+.desk-object-cutout:hover {
   animation: deskWobble 0.65s infinite ease-in-out;
   z-index: 25 !important;
 }
 
-.desk-object-inner {
-  padding: 6px;
-  background-color: #FAFBF7;
-  border-radius: 8px;
-  box-shadow: var(--shadow-desk-object);
-  transition: box-shadow 0.25s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.desk-object:hover .desk-object-inner {
-  box-shadow: var(--shadow-desk-object-hover);
-}
-
-.desk-object-img {
+/* Sticker silhouette filter: no white square backing */
+.desk-cutout-img {
   display: block;
   width: 100%;
   height: auto;
+  filter: url(#sticker-edge);
   pointer-events: none;
 }
 
@@ -589,7 +718,7 @@
 .journey-step-card.step-dimmed .step-body-content {
   background-color: rgba(250, 251, 247, 0.72);
   border-color: #9AA79E;
-  color: var(--color-ink-dim); /* Minimum 6.0:1 on background */
+  color: var(--color-ink-dim);
 }
 
 .journey-step-card.step-dimmed:hover {
@@ -888,7 +1017,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #FFFDE7; /* Classic pale yellow note paper */
+  background-color: #FFFDE7;
   position: relative;
 }
 
@@ -1140,47 +1269,94 @@
 /* ==========================================================================
    RESPONSIVE DESIGN & MOBILE (< 700px, 360px)
    ========================================================================== */
-@media (max-width: 700px) {
+@media (max-width: 699px) {
   .site-header {
     height: auto;
-    padding: 12px 16px;
+    padding: 10px 8px;
     flex-direction: column;
-    gap: 12px;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .header-nav {
+    width: 100%;
+    display: flex;
+    justify-content: center;
   }
 
   .nav-pills-row {
+    display: flex;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    box-sizing: border-box;
   }
 
   .nav-pill {
-    padding: 6px 12px;
-    font-size: 0.84rem;
+    padding: 4px 7px;
+    font-size: 0.74rem;
+    gap: 3px;
+    box-shadow: 1.5px 1.5px 0px var(--color-ink);
+  }
+
+  .nav-pill svg {
+    width: 13px;
+    height: 13px;
   }
 
   .brand-signature {
     font-size: 1.85rem;
   }
 
-  .desk-surface {
-    padding: 20px 12px 80px 12px;
+  .desk-surface-stage {
+    min-height: 520px;
   }
 
-  .desk-hero-card {
-    padding: 22px 18px;
-    margin: 0 8px;
+  .desk-hero-minimal {
+    width: 90%;
+    top: 42%;
   }
 
-  .hero-heading {
-    font-size: 1.55rem;
+  /* 2 centered lines on mobile */
+  .hero-single-line {
+    white-space: normal;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.94rem;
+    line-height: 1.35;
+    gap: 2px;
   }
 
-  .cycling-word {
-    font-size: 2.1rem;
+  .hero-lead-text {
+    display: block;
+    max-width: 280px;
+    margin: 0 auto;
   }
 
-  .hero-subtext {
-    font-size: 0.95rem;
+  .hero-word-slot {
+    display: block;
+    min-width: unset;
+    text-align: center;
+    margin: 2px 0 0 0;
+  }
+
+  .hero-cycling-word {
+    font-size: 2.1em;
+    vertical-align: baseline;
+  }
+
+  .desk-doodle-container {
+    bottom: 14px;
+    left: 14px;
+    transform: scale(0.8);
+    transform-origin: bottom left;
   }
 
   .desk-doodle-container {
@@ -1258,12 +1434,12 @@
 
 /* Ultra small viewports (360px) */
 @media (max-width: 360px) {
-  .hero-heading {
-    font-size: 1.35rem;
+  .hero-single-line {
+    font-size: 0.92rem;
   }
-  
-  .cycling-word {
-    font-size: 1.85rem;
+
+  .hero-cycling-word {
+    font-size: 1.7em;
   }
 
   .nav-pill {
