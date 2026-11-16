@@ -6,6 +6,7 @@ import {
   AWAY_LAYOUT,
 } from '../data/driftKeyframes';
 import { HeroLine, type HeroWord } from './HeroLine';
+import { StickMan } from './StickMan';
 
 interface Spark {
   id: number;
@@ -542,6 +543,9 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
           );
         })}
       </div>
+
+      {/* Doodle Stickman Character Layer (Controlled via W, A, S, D) */}
+      <StickMan isAway={shouldBeAway} />
 
       {/* Handwritten scroll hint with doodle arrow (visible only in home mode) */}
       <div

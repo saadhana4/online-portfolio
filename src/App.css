@@ -1374,3 +1374,88 @@
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   STICKMAN DOODLE COMPONENT
+   Interactive pencil doodle walking across the scrapbook desk using WASD
+   ========================================================================== */
+.stickman-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 92px;
+  z-index: 15; /* Above desk objects (z: 2..5), below modals (z: 100) */
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  mix-blend-mode: multiply;
+  transform-origin: center bottom;
+  transition: opacity 300ms ease;
+  will-change: transform;
+}
+
+.stickman-container.is-away {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.stickman-hint {
+  position: absolute;
+  bottom: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-handwriting, 'Caveat', cursive);
+  font-size: 15px;
+  font-weight: 600;
+  color: #72685c;
+  background: rgba(254, 252, 248, 0.94);
+  border: 1px dashed #cfc5b4;
+  padding: 3px 9px 4px 9px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(60, 50, 40, 0.08);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+.stickman-hint.faded {
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px);
+}
+
+.stickman-puffs-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 14;
+  overflow: hidden;
+}
+
+.stickman-foot-puff {
+  position: absolute;
+  width: 10px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(40, 36, 33, 0.16);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: stickmanPuffFade 0.65s forwards ease-out;
+}
+
+@keyframes stickmanPuffFade {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.35; }
+  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+}
+
+@media (max-width: 700px) {
+  .stickman-container {
+    width: 38px;
+    height: 80px;
+  }
+  .stickman-hint {
+    font-size: 13px;
+    bottom: 84px;
+  }
+}
+
