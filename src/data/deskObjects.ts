@@ -79,14 +79,14 @@ export const deskObjects: DeskObjectConfig[] = [
   },
   {
     id: 'sticky-notes',
-    name: 'Pastel Sticky Notes',
-    src: '/desk/stickynotes.svg',
+    name: 'Vintage Books',
+    src: '/desk/books.webp',
     x: 79.5,
     y: 29.5,
     rotation: 5,
-    widthVw: 8.42, // 115px at 1366px
-    targetPx1366: 115,
-    alt: '',
+    widthVw: 10.5, // ~143px at 1366px
+    targetPx1366: 143,
+    alt: 'Stack of vintage leather-bound books',
     showOnMobile: false,
     zIndex: 2,
   },
@@ -165,14 +165,14 @@ export const deskObjects: DeskObjectConfig[] = [
   },
   {
     id: 'sd-cards',
-    name: 'SD Memory Cards',
-    src: '/desk/sdcards.svg',
+    name: 'Vintage Hourglass',
+    src: '/desk/hourglass.webp',
     x: 91,
     y: 78,
     rotation: -10,
-    widthVw: 8.42, // 115px at 1366px
-    targetPx1366: 115,
-    alt: '',
+    widthVw: 6.2, // ~85px wide x 129px tall at 1366px
+    targetPx1366: 85,
+    alt: 'Vintage wooden and brass hourglass with sand',
     showOnMobile: false,
     zIndex: 2,
   },
