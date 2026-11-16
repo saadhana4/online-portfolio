@@ -135,19 +135,19 @@ export const deskObjects: DeskObjectConfig[] = [
   },
   {
     id: 'coffee-cup',
-    name: 'Ceramic Coffee Cup',
-    src: '/desk/coffeecup.svg',
+    name: 'Vintage Light Bulb',
+    src: '/desk/bulb.webp',
     x: 26,
     y: 70,
-    rotation: -3,
-    widthVw: 7.32, // 100px at 1366px
-    targetPx1366: 100,
-    alt: '',
+    rotation: 15,
+    widthVw: 5.6, // ~76px wide x 123px tall at 1366px
+    targetPx1366: 76,
+    alt: 'Vintage incandescent light bulb',
     showOnMobile: true,
-    mobileX: 76,
+    mobileX: 74,
     mobileY: 58,
-    mobileWidthVw: 16,
-    mobileRotation: -3,
+    mobileWidthVw: 13,
+    mobileRotation: 12,
     zIndex: 3,
   },
   {
