@@ -92,14 +92,14 @@ export const deskObjects: DeskObjectConfig[] = [
   },
   {
     id: 'tape-roll',
-    name: 'Washi Tape Roll',
-    src: '/desk/taperoll.svg',
-    x: 23,
+    name: 'Vintage Magnifying Glass',
+    src: '/desk/magnifying-glass.webp',
+    x: 21,
     y: 43,
-    rotation: 0,
-    widthVw: 4.76, // 65px at 1366px
-    targetPx1366: 65,
-    alt: '',
+    rotation: 5,
+    widthVw: 6.8, // ~93px wide x 144px tall at 1366px
+    targetPx1366: 93,
+    alt: 'Vintage brass magnifying glass with turned wooden handle',
     showOnMobile: false,
     zIndex: 2,
   },
@@ -178,18 +178,18 @@ export const deskObjects: DeskObjectConfig[] = [
   },
   {
     id: 'laptop',
-    name: 'Laptop with Code',
-    src: '/desk/laptop.svg',
+    name: 'Vintage Retro Computer',
+    src: '/desk/computer.webp',
     x: 54,
-    y: 65, // top edge sits about 40px below the hero line at 45%
-    rotation: -3,
-    widthVw: 20.50, // 280px at 1366px
-    targetPx1366: 280,
-    alt: '',
+    y: 69, // sits comfortably below the hero line
+    rotation: -2,
+    widthVw: 18.5, // ~253px wide x 233px tall at 1366px
+    targetPx1366: 253,
+    alt: 'Vintage desktop computer with CRT monitor, keyboard and mouse',
     showOnMobile: true,
     mobileX: 50,
-    mobileY: 79,
-    mobileWidthVw: 50,
+    mobileY: 78,
+    mobileWidthVw: 48,
     mobileRotation: -2,
     zIndex: 4,
   },
