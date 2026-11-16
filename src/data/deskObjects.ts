@@ -168,7 +168,7 @@ export const deskObjects: DeskObjectConfig[] = [
     name: 'Watercolor Laptop',
     src: '/desk/watercolor-laptop.webp',
     x: 54,
-    y: 72, // sits comfortably below the hero line
+    y: 71, // sits comfortably below the hero line
     rotation: -2,
     widthVw: 17.5, // ~239px wide x 215px tall at 1366px
     targetPx1366: 239,

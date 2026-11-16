@@ -154,18 +154,18 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
   laptop: {
     id: 'laptop',
     delay: 0.035,
-    p0: { x: 54, y: 65, rot: -3 },
+    p0: { x: 54, y: 71, rot: -3 },
     p28: { x: 98, y: 2, rot: 35 },
     p45: { x: 94, y: 6, rot: -15 },
     p65: { x: 78, y: 13, rot: 26 },
     p85: { x: 50, y: 36, rot: -28 },
-    p1: { x: 54, y: 65, rot: -3 },
-    mobileP0: { x: 50, y: 79, rot: -2 },
+    p1: { x: 54, y: 71, rot: -3 },
+    mobileP0: { x: 50, y: 77, rot: -2 },
     mobileP28: { x: 92, y: -6, rot: 35 },
     mobileP45: { x: 88, y: -4, rot: -15 },
     mobileP65: { x: 50, y: 82, rot: 26 },
     mobileP85: { x: 50, y: 36, rot: -28 },
-    mobileP1: { x: 50, y: 79, rot: -2 },
+    mobileP1: { x: 50, y: 77, rot: -2 },
   },
 };
 
