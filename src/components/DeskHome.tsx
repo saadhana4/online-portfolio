@@ -527,7 +527,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
               ref={(el) => {
                 objectRefs.current[obj.id] = el;
               }}
-              className={`desk-object-cutout desk-object-${obj.id}`}
+              className={`desk-object-cutout desk-object-${obj.id} ${obj.src.endsWith('.webp') ? 'is-photo' : ''}`}
               style={style}
               aria-hidden="true"
             >
@@ -535,7 +535,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
                 src={obj.src}
                 alt=""
                 loading="lazy"
-                className="desk-cutout-img"
+                className={`desk-cutout-img ${obj.src.endsWith('.webp') ? 'is-photo' : ''}`}
                 draggable={false}
               />
             </div>

@@ -33,18 +33,1499 @@
     <!-- Global SVG Filter Definitions for Scrapbook & Sticker Effects -->
     <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <!-- Sticker Cutout Edge Filter (Dilates alpha 3px, floods white, roughens with displacement map, merges original, soft drop shadow) -->
-        <filter id="sticker-edge" x="-30%" y="-30%" width="160%" height="160%">
+                <!-- Paper Cutout Filter: paper-cutout -->
+        <filter id="paper-cutout" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
           <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
-          <feFlood flood-color="#FAFBF7" flood-opacity="1" result="whiteFlood" />
-          <feComposite in="whiteFlood" in2="dilatedAlpha" operator="in" result="whiteBorder" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" seed="5" />
-          <feDisplacementMap in="whiteBorder" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" result="roughenedBorder" />
-          <feMerge result="stickerMerged">
-            <feMergeNode in="roughenedBorder" />
-            <feMergeNode in="SourceGraphic" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="10" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="24" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="22" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="42" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
           </feMerge>
-          <feDropShadow in="stickerMerged" dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.18" />
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-notebook -->
+        <filter id="paper-cutout-notebook" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="17" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="37" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="39" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="61" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-pencil -->
+        <filter id="paper-cutout-pencil" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="24" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="50" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="56" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="80" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-webcam -->
+        <filter id="paper-cutout-webcam" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="31" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="63" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="73" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="99" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-headphones -->
+        <filter id="paper-cutout-headphones" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="38" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="76" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="90" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="118" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-sticky-notes -->
+        <filter id="paper-cutout-sticky-notes" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="45" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="89" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="107" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="137" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-tape-roll -->
+        <filter id="paper-cutout-tape-roll" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="52" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="102" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="124" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="156" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-plant -->
+        <filter id="paper-cutout-plant" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="59" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="115" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="141" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="175" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-ruler -->
+        <filter id="paper-cutout-ruler" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="66" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="128" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="158" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="194" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-coffee-cup -->
+        <filter id="paper-cutout-coffee-cup" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="73" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="141" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="175" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="213" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-sd-cards -->
+        <filter id="paper-cutout-sd-cards" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="80" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="154" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="192" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="232" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-scissors -->
+        <filter id="paper-cutout-scissors" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="87" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="167" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="209" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="251" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-laptop -->
+        <filter id="paper-cutout-laptop" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="94" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="180" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Printed color grading on SourceGraphic: saturate 0.8, warm tint (R x1.03, B x0.94), lift blacks (slope 0.92, intercept 0.04) -->
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0.8" result="desatGraphic" />
+          <feColorMatrix in="desatGraphic" type="matrix"
+            values="1.03 0    0    0 0
+                    0    1    0    0 0
+                    0    0    0.94 0 0
+                    0    0    0    1 0" result="tintedGraphic" />
+          <feComponentTransfer in="tintedGraphic" result="gradedGraphic">
+            <feFuncR type="linear" slope="0.92" intercept="0.04" />
+            <feFuncG type="linear" slope="0.92" intercept="0.04" />
+            <feFuncB type="linear" slope="0.92" intercept="0.04" />
+          </feComponentTransfer>
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="226" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="270" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="gradedGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo -->
+        <filter id="paper-cutout-photo" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="10" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="24" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="22" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="42" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-notebook -->
+        <filter id="paper-cutout-photo-notebook" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="17" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="37" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="39" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="61" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-pencil -->
+        <filter id="paper-cutout-photo-pencil" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="24" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="50" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="56" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="80" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-webcam -->
+        <filter id="paper-cutout-photo-webcam" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="31" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="63" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="73" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="99" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-headphones -->
+        <filter id="paper-cutout-photo-headphones" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="38" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="76" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="90" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="118" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-sticky-notes -->
+        <filter id="paper-cutout-photo-sticky-notes" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="45" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="89" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="107" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="137" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-tape-roll -->
+        <filter id="paper-cutout-photo-tape-roll" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="52" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="102" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="124" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="156" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-plant -->
+        <filter id="paper-cutout-photo-plant" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="59" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="115" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="141" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="175" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-ruler -->
+        <filter id="paper-cutout-photo-ruler" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="66" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="128" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="158" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="194" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-coffee-cup -->
+        <filter id="paper-cutout-photo-coffee-cup" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="73" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="141" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="175" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="213" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-sd-cards -->
+        <filter id="paper-cutout-photo-sd-cards" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="80" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="154" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="192" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="232" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-scissors -->
+        <filter id="paper-cutout-photo-scissors" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="87" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="167" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="209" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="251" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
+        </filter>
+
+        <!-- Paper Cutout Filter: paper-cutout-photo-laptop -->
+        <filter id="paper-cutout-photo-laptop" x="-8%" y="-7%" width="116%" height="118%" filterUnits="objectBoundingBox">
+          <!-- a) Torn rim: feMorphology dilate radius 3, rough displacement scale 6, fine displacement scale 1.5, feFlood #f7f3e8 -->
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilatedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="94" result="roughNoise" />
+          <feDisplacementMap in="dilatedAlpha" in2="roughNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="raggedAlpha" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="180" result="fineNoise" />
+          <feDisplacementMap in="raggedAlpha" in2="fineNoise" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="tornRimAlpha" />
+          <feFlood flood-color="#f7f3e8" flood-opacity="1" result="rimColor" />
+          <feComposite in="rimColor" in2="tornRimAlpha" operator="in" result="tornRim" />
+
+          <!-- b) Photo-ready: skip color grading -->
+
+          <!-- c) Paper grain on the object: baseFrequency 0.8 numOctaves 2 to grayscale 30%, low-freq noise 0.02 at 10% -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="226" result="grainNoise" />
+          <feColorMatrix in="grainNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayGrain" />
+          <feComponentTransfer in="grayGrain" result="grain30">
+            <feFuncR type="linear" slope="0.30" intercept="0.70" />
+            <feFuncG type="linear" slope="0.30" intercept="0.70" />
+            <feFuncB type="linear" slope="0.30" intercept="0.70" />
+          </feComponentTransfer>
+
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="270" result="agingNoise" />
+          <feColorMatrix in="agingNoise" type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0" result="grayAging" />
+          <feComponentTransfer in="grayAging" result="aging10">
+            <feFuncR type="linear" slope="0.10" intercept="0.90" />
+            <feFuncG type="linear" slope="0.10" intercept="0.90" />
+            <feFuncB type="linear" slope="0.10" intercept="0.90" />
+          </feComponentTransfer>
+
+          <feBlend in="SourceGraphic" in2="grain30" mode="multiply" result="grainBlended" />
+          <feBlend in="grainBlended" in2="aging10" mode="multiply" result="agedGraphic" />
+          <feComposite in="agedGraphic" in2="SourceAlpha" operator="in" result="texturedObject" />
+
+          <!-- d) Soft shadow: dx 0, dy 2, stdDeviation 2.5, flood-color #3a2a14, flood-opacity 0.28 -->
+          <feDropShadow in="tornRim" dx="0" dy="2" stdDeviation="2.5" flood-color="#3a2a14" flood-opacity="0.28" result="shadowAndRim" />
+
+          <!-- Merge: shadow and rim at bottom, graded textured object on top -->
+          <feMerge>
+            <feMergeNode in="shadowAndRim" />
+            <feMergeNode in="texturedObject" />
+          </feMerge>
         </filter>
 
         <!-- Torn paper edge displacement filter for cards and modals -->

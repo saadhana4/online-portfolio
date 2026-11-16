@@ -608,14 +608,59 @@
   user-select: none;
 }
 
-/* Sticker silhouette filter */
+/* Vintage Paper Cutout Filter (applied to img only, never to animated wrapper) */
 .desk-cutout-img {
   display: block;
   width: 100%;
   height: auto;
-  filter: url(#sticker-edge);
+  filter: url(#paper-cutout);
   pointer-events: none;
 }
+
+/* Unique torn rim seeds per object */
+.desk-object-notebook .desk-cutout-img { filter: url(#paper-cutout-notebook); }
+.desk-object-pencil .desk-cutout-img { filter: url(#paper-cutout-pencil); }
+.desk-object-webcam .desk-cutout-img { filter: url(#paper-cutout-webcam); }
+.desk-object-headphones .desk-cutout-img { filter: url(#paper-cutout-headphones); }
+.desk-object-sticky-notes .desk-cutout-img { filter: url(#paper-cutout-sticky-notes); }
+.desk-object-tape-roll .desk-cutout-img { filter: url(#paper-cutout-tape-roll); }
+.desk-object-plant .desk-cutout-img { filter: url(#paper-cutout-plant); }
+.desk-object-ruler .desk-cutout-img { filter: url(#paper-cutout-ruler); }
+.desk-object-coffee-cup .desk-cutout-img { filter: url(#paper-cutout-coffee-cup); }
+.desk-object-sd-cards .desk-cutout-img { filter: url(#paper-cutout-sd-cards); }
+.desk-object-scissors .desk-cutout-img { filter: url(#paper-cutout-scissors); }
+.desk-object-laptop .desk-cutout-img { filter: url(#paper-cutout-laptop); }
+
+/* Photo-ready: if an object image is a real photo (.is-photo or .webp), skip color grading */
+.is-photo .desk-cutout-img,
+.desk-cutout-img.is-photo,
+.desk-cutout-img[src$=".webp"] {
+  filter: url(#paper-cutout-photo);
+}
+.desk-object-notebook.is-photo .desk-cutout-img,
+.desk-object-notebook .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-notebook); }
+.desk-object-pencil.is-photo .desk-cutout-img,
+.desk-object-pencil .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-pencil); }
+.desk-object-webcam.is-photo .desk-cutout-img,
+.desk-object-webcam .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-webcam); }
+.desk-object-headphones.is-photo .desk-cutout-img,
+.desk-object-headphones .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-headphones); }
+.desk-object-sticky-notes.is-photo .desk-cutout-img,
+.desk-object-sticky-notes .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-sticky-notes); }
+.desk-object-tape-roll.is-photo .desk-cutout-img,
+.desk-object-tape-roll .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-tape-roll); }
+.desk-object-plant.is-photo .desk-cutout-img,
+.desk-object-plant .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-plant); }
+.desk-object-ruler.is-photo .desk-cutout-img,
+.desk-object-ruler .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-ruler); }
+.desk-object-coffee-cup.is-photo .desk-cutout-img,
+.desk-object-coffee-cup .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-coffee-cup); }
+.desk-object-sd-cards.is-photo .desk-cutout-img,
+.desk-object-sd-cards .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-sd-cards); }
+.desk-object-scissors.is-photo .desk-cutout-img,
+.desk-object-scissors .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-scissors); }
+.desk-object-laptop.is-photo .desk-cutout-img,
+.desk-object-laptop .desk-cutout-img[src$=".webp"] { filter: url(#paper-cutout-photo-laptop); }
 
 /* ==========================================================================
    6) CLICK SPARK BURST LAYER
