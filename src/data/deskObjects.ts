@@ -49,14 +49,14 @@ export const deskObjects: DeskObjectConfig[] = [
   },
   {
     id: 'webcam',
-    name: 'Clip-on Webcam',
-    src: '/desk/webcam.svg',
+    name: 'Vintage Camera',
+    src: '/desk/camera.webp',
     x: 36,
     y: 25,
     rotation: -4,
-    widthVw: 5.12, // 70px at 1366px
-    targetPx1366: 70,
-    alt: '',
+    widthVw: 7.2, // ~98px at 1366px (1.47:1 aspect ratio)
+    targetPx1366: 98,
+    alt: 'Vintage rangefinder camera',
     showOnMobile: false,
     zIndex: 1,
   },
