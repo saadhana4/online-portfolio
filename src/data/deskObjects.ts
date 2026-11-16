@@ -19,19 +19,19 @@ export interface DeskObjectConfig {
 export const deskObjects: DeskObjectConfig[] = [
   {
     id: 'notebook',
-    name: 'Spiral Notebook',
-    src: '/desk/notebook.svg',
-    x: 11,
-    y: 20,
-    rotation: -6,
-    widthVw: 12.08, // 165px at 1366px
-    targetPx1366: 165,
-    alt: '',
+    name: 'Watercolor Coffee Cup',
+    src: '/desk/coffee-cup-saucer.webp',
+    x: 12,
+    y: 22,
+    rotation: -4,
+    widthVw: 10.5, // ~143px wide x 126px tall at 1366px
+    targetPx1366: 143,
+    alt: 'Ceramic coffee cup on saucer with dark roast coffee',
     showOnMobile: true,
     mobileX: 20,
-    mobileY: 21,
-    mobileWidthVw: 24,
-    mobileRotation: -6,
+    mobileY: 22,
+    mobileWidthVw: 22,
+    mobileRotation: -4,
     zIndex: 2,
   },
   {
@@ -165,17 +165,17 @@ export const deskObjects: DeskObjectConfig[] = [
   },
   {
     id: 'laptop',
-    name: 'Vintage Retro Computer',
-    src: '/desk/computer.webp',
+    name: 'Watercolor Laptop',
+    src: '/desk/watercolor-laptop.webp',
     x: 54,
-    y: 69, // sits comfortably below the hero line
+    y: 72, // sits comfortably below the hero line
     rotation: -2,
-    widthVw: 18.5, // ~253px wide x 233px tall at 1366px
-    targetPx1366: 253,
-    alt: 'Vintage desktop computer with CRT monitor, keyboard and mouse',
+    widthVw: 17.5, // ~239px wide x 215px tall at 1366px
+    targetPx1366: 239,
+    alt: 'Watercolor sketch of an open modern laptop',
     showOnMobile: true,
     mobileX: 50,
-    mobileY: 78,
+    mobileY: 77,
     mobileWidthVw: 48,
     mobileRotation: -2,
     zIndex: 4,
