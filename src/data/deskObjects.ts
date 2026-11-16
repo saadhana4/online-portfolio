@@ -109,14 +109,14 @@ export const deskObjects: DeskObjectConfig[] = [
   },
   {
     id: 'ruler',
-    name: 'Wooden Ruler',
-    src: '/desk/ruler.svg',
+    name: 'Hand Holding Smartphone',
+    src: '/desk/hand-phone.webp',
     x: 12,
-    y: 76,
-    rotation: -35,
-    widthVw: 10.98, // 150px at 1366px
-    targetPx1366: 150,
-    alt: '',
+    y: 77,
+    rotation: -10,
+    widthVw: 7.8, // ~107px wide x 144px tall at 1366px
+    targetPx1366: 107,
+    alt: 'Vintage stipple sketch of a hand holding a smartphone',
     showOnMobile: false,
     zIndex: 2,
   },
