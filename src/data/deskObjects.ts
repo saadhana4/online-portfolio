@@ -35,19 +35,6 @@ export const deskObjects: DeskObjectConfig[] = [
     zIndex: 2,
   },
   {
-    id: 'pencil',
-    name: 'Graphite Pencil',
-    src: '/desk/pencil.svg',
-    x: 24.5, // >=24px from notebook (notebook right edge ~17vw, pencil left edge ~19vw)
-    y: 22,
-    rotation: 14,
-    widthVw: 10.98, // 150px at 1366px
-    targetPx1366: 150,
-    alt: '',
-    showOnMobile: false,
-    zIndex: 3,
-  },
-  {
     id: 'webcam',
     name: 'Vintage Camera',
     src: '/desk/camera.webp',
