@@ -17,7 +17,7 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
   const legBackRef = useRef<SVGPathElement>(null);
 
   // Responsive hint text (purely keyboard WASD instructions)
-  const [hintText] = useState<string>('A: left  •  W: jump  •  D: right');
+  const [hintText] = useState<string>('use WASD');
 
   // State refs: X position strictly along the bottom of the screen
   const posXRef = useRef<number>(32);
