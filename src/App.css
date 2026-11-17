@@ -1100,12 +1100,10 @@
 }
 
 /* ==========================================================================
-   PHONE MODAL (ABOUT & CONTACT) - RECOLORED TO BASE-100 / BASE-200
+   PHONE MODAL (ABOUT & CONTACT) - HAND-PHONE ZOOM TRANSITION & PAPER SCRAPBOOK LOOK
    ========================================================================== */
-/* ==========================================================================
-   PHONE MODAL (ABOUT & CONTACT) - FLIP ZOOM TRANSITION & PAPER SCRAPBOOK LOOK
-   ========================================================================== */
-/* 2) DESK DIMMING OVERLAY: Fades in over 500ms, warm dark tint rgba(60,50,35,0.30) */
+
+/* 3) DESK DIMMING OVERLAY: Fades in over 500ms, warm dark tint rgba(60,50,35,0.30) */
 .desk-dim-overlay {
   position: fixed;
   inset: 0;
@@ -1114,7 +1112,7 @@
   background-color: rgba(60, 50, 35, 0.30);
   opacity: 0;
   transition: opacity 500ms ease;
-  z-index: 60; /* Above desk stage and burst layer (z <= 20), below phone (z: 80) and nav (z: 100) */
+  z-index: 60; /* Above desk stage and burst layer (z <= 20), below phone (z: 85) and nav (z: 100) */
   pointer-events: auto;
 }
 
@@ -1124,15 +1122,15 @@
 
 .desk-dim-overlay.is-fading-out {
   opacity: 0;
-  transition: opacity 600ms ease;
+  transition: opacity 800ms ease;
 }
 
 /* While phone is open, hide desk object phone-in-hand */
 .desk-surface-stage.phone-is-open .desk-object-ruler,
 .desk-object-ruler.desk-phone-hidden {
+  visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
-  transition: opacity 200ms ease-out;
 }
 
 /* Modal Root Container: Positioned below nav (z-index 100), above dim overlay (z-index 60) */
@@ -1142,141 +1140,48 @@
   width: 100vw;
   height: 100vh;
   height: 100svh;
-  z-index: 80;
+  z-index: 85;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 76px; /* Clear space below desktop nav pills (y=26..62px) */
-  padding-bottom: 16px;
-  box-sizing: border-box;
+  overflow: hidden; /* Hand runs off screen edges cleanly; clip with overflow hidden on viewport, no scrollbars */
 }
 
-.phone-modal-layout {
+.phone-dialog-wrap {
   position: relative;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 4) CONTACT ACTIONS & PHONE CONTAINER LAYOUT
-   On screens 1000px and up: phone centered, actions vertical stack at right with 32px gap.
-   Under 1000px: flex column with wrapping row under phone. */
-@media (min-width: 1000px) {
-  .phone-modal-layout {
-    flex-direction: row;
-    gap: 32px;
-  }
-}
-
-@media (max-width: 999px) {
-  .phone-modal-root {
-    padding-top: 68px; /* Clear mobile header */
-    padding-bottom: 12px;
-  }
-
-  .phone-modal-layout {
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 440px;
-    padding: 0 12px;
-    box-sizing: border-box;
-  }
-}
-
-/* 5) PHONE SIZE: Portrait with ~1:1.95 ratio.
-   Height min(86svh, 600px). On 1366x642 fits fully with nav pills clear above it. */
-.phone-device-chassis {
-  position: relative;
-  pointer-events: auto;
-  background-color: #24201c;
-  border: 3px solid var(--base-400);
-  border-radius: 40px;
-  box-shadow: 0 16px 40px rgba(12, 9, 8, 0.42), 0 2px 8px rgba(12, 9, 8, 0.25);
-  padding: 10px 10px 14px 10px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transform-origin: center center;
-}
-
-@media (min-width: 1000px) {
-  .phone-device-chassis {
-    height: min(86svh, calc(100svh - 96px), 600px);
-    width: calc(min(86svh, calc(100svh - 96px), 600px) / 1.95);
-  }
-}
-
-@media (max-width: 999px) {
-  .phone-device-chassis {
-    height: min(56svh, calc(100svh - 175px), 480px);
-    width: calc(min(56svh, calc(100svh - 175px), 480px) / 1.95);
-  }
-}
-
-@media (max-width: 420px) {
-  .phone-device-chassis {
-    height: min(54svh, calc(100svh - 180px), 440px);
-    width: calc(min(54svh, calc(100svh - 180px), 440px) / 1.95);
-  }
-}
-
-/* Crack texture: visible always */
-.phone-crack-svg {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 15;
-  color: rgba(250, 247, 238, 0.32);
 }
 
-.phone-device-chassis.screen-on .phone-crack-svg {
-  color: rgba(31, 42, 36, 0.16);
+/* 2) ANIMATING CLONE OF DESK OBJECT (The Hand Holding Phone Image) */
+.hand-phone-clone {
+  position: fixed;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  z-index: 85;
+  overflow: visible;
+  filter: drop-shadow(0 18px 28px rgba(40, 30, 20, 0.35)); /* Static CSS drop-shadow only, NO SVG filter */
 }
 
-/* Top Notch */
-.phone-notch-bar {
-  height: 14px;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  z-index: 20;
+.hand-phone-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  user-select: none;
+  pointer-events: none;
 }
 
-.phone-speaker-slot {
-  width: 42px;
-  height: 4px;
-  background-color: var(--base-400);
-  border-radius: 999px;
-}
-
-.phone-camera-lens {
-  width: 6px;
-  height: 6px;
-  background-color: var(--base-400);
-  border-radius: 50%;
-}
-
-/* 3) PHONE DISPLAY SCREEN: Arrives OFF (dark, matching chassis) */
-.phone-screen-frame {
-  flex: 1;
-  position: relative;
-  border-radius: 28px;
+/* 4) SCREEN UI CONTAINER: Placed & rotated over calibrated screen quad */
+.phone-screen-container {
+  position: absolute;
+  box-sizing: border-box;
   overflow: hidden;
-  background-color: #171513;
-  border: 1.5px solid rgba(0, 0, 0, 0.38);
-  display: flex;
-  flex-direction: column;
+  background-color: #0b0a09; /* Opaque dark background matching chassis when screen is off */
+  pointer-events: auto;
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.6);
 }
 
-/* Light screen layer that switches ON 100ms after zoom */
+/* Opaque light screen layer that switches on 100ms after zoom */
 .phone-screen-light-layer {
   position: absolute;
   inset: 0;
@@ -1287,30 +1192,31 @@
   flex-direction: column;
   overflow: hidden;
   opacity: 0;
+  pointer-events: auto;
 }
 
 .phone-screen-light-layer.layer-on {
   opacity: 1;
-  animation: screenFlickerOn 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: screenSwitchOn 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Screen flicker keyframes: 300ms fade with quick brightness dip at ~60ms */
-@keyframes screenFlickerOn {
+@keyframes screenSwitchOn {
   0% {
     opacity: 0;
     filter: brightness(0.6);
   }
   20% {
     opacity: 0.85;
-    filter: brightness(0.5); /* slight dip at ~60ms */
+    filter: brightness(0.4); /* slight dip at ~60ms */
   }
   35% {
-    opacity: 0.72;
+    opacity: 0.75;
     filter: brightness(0.85);
   }
   50% {
     opacity: 0.95;
-    filter: brightness(1);
+    filter: brightness(1.15);
   }
   100% {
     opacity: 1;
@@ -1321,15 +1227,17 @@
 /* Header & Status Bar */
 .notes-app-header,
 .mail-app-header {
-  height: 44px;
-  padding: 0 14px;
+  height: 42px;
+  padding: 0 8px;
   background-color: var(--base-200);
-  border-bottom: 1.5px solid var(--base-200);
+  border-bottom: 1.5px solid var(--base-250, #e2dcd2);
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
   transition: opacity 200ms ease;
+  font-family: var(--font-body);
+  box-sizing: border-box;
 }
 
 .header-hidden {
@@ -1341,22 +1249,49 @@
 }
 
 .notes-back-btn,
-.notes-switch-btn,
 .mail-cancel-btn {
   background: none;
   border: none;
   color: var(--accent);
-  font-weight: 700;
-  font-size: 1.05rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 2px 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.notes-app-title,
-.mail-app-title {
-  font-size: 1.45rem;
+.notes-switch-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-family: var(--font-handwriting);
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.notes-app-title {
+  font-family: var(--font-body);
+  font-size: 15px;
   font-weight: 700;
   color: var(--base-400);
+}
+
+.mail-app-title {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--base-400);
+  white-space: nowrap;
+  text-align: center;
+  flex: 1;
+  margin: 0 2px;
+  overflow: visible;
 }
 
 .mail-send-btn {
@@ -1364,10 +1299,13 @@
   color: var(--base-100);
   border: none;
   border-radius: 999px;
-  padding: 3px 12px;
-  font-size: 1.05rem;
+  padding: 3px 10px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Mail Form Content */
@@ -1383,88 +1321,104 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 10px 14px 12px 14px;
+  padding: 8px 12px 10px 12px;
   overflow-y: auto;
-  gap: 8px;
+  gap: 6px;
 }
 
 .mail-input-row {
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--base-200);
-  padding: 4px 0;
-  gap: 8px;
+  padding: 3px 0;
+  gap: 6px;
 }
 
 .mail-label {
-  width: 46px;
-  font-size: 0.88rem;
-  font-weight: 700;
+  min-width: 26px;
+  margin-right: 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
   color: var(--base-350);
+  flex-shrink: 0;
 }
 
 .mail-to-recipient {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 4px;
+  overflow: visible;
 }
 
 .mail-input {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 0.9rem;
+  font-family: var(--font-body);
+  font-size: 16px;
   color: var(--base-400);
   outline: none;
-  font-family: inherit;
+  min-height: 36px;
+  width: 100%;
 }
 
 .mail-input-readonly {
   font-weight: 600;
+  font-size: 11px;
+  min-width: 0;
+  flex: 1;
+  padding: 0;
+  letter-spacing: -0.2px;
 }
 
 .copy-email-btn {
   background-color: var(--pill);
   border: 1px solid var(--base-300);
   border-radius: 6px;
-  padding: 2px 7px;
-  font-size: 0.74rem;
-  font-weight: 700;
+  padding: 1px 6px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
   color: var(--base-400);
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .mail-select {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 0.88rem;
+  font-family: var(--font-body);
+  font-size: 16px;
   color: var(--base-400);
   outline: none;
-  font-family: inherit;
   cursor: pointer;
+  min-height: 36px;
+  width: 100%;
 }
 
 .mail-body-row {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 80px;
+  min-height: 60px;
 }
 
 .mail-textarea {
   flex: 1;
-  border: 1px solid var(--base-200);
-  border-radius: 10px;
+  border: 1px solid var(--base-250, #e2dcd2);
+  border-radius: 8px;
   padding: 8px;
-  background-color: rgba(255, 255, 255, 0.4);
-  font-size: 0.88rem;
+  background-color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-body);
+  font-size: 14px;
   color: var(--base-400);
   resize: none;
   outline: none;
-  font-family: inherit;
   line-height: 1.4;
 }
 
@@ -1475,7 +1429,7 @@
 .mail-submit-row {
   display: flex;
   justify-content: flex-end;
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 .mail-primary-send-btn {
@@ -1484,7 +1438,7 @@
   border: none;
   border-radius: 999px;
   padding: 5px 16px;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(184, 80, 50, 0.25);
@@ -1543,25 +1497,25 @@
 .notes-scrollable-body {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 14px 20px 14px;
-  line-height: 24px;
+  padding: 10px 12px 16px 12px;
+  line-height: 22px;
 }
 
 .notes-date-stamp {
   font-size: 1.05rem;
   color: var(--base-350);
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .notes-photo-slot {
   display: flex;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .notes-avatar-img {
-  max-width: 140px;
+  max-width: 130px;
   height: auto;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -1570,8 +1524,8 @@
 .notes-fields-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 5px;
+  margin-bottom: 10px;
 }
 
 .notes-field-row {
@@ -1580,23 +1534,25 @@
 }
 
 .field-label {
-  font-size: 1.18rem;
+  font-family: var(--font-body);
+  font-size: 13px;
   font-weight: 700;
   color: var(--accent);
 }
 
 .field-value {
-  font-size: 0.92rem;
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
   color: var(--base-400);
   line-height: 1.35;
 }
 
 .notes-footer-doodle {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   color: var(--base-350);
   text-align: center;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .notes-row-stagger-1 {
@@ -1623,16 +1579,6 @@
   transition: opacity 250ms ease 180ms, transform 250ms ease 180ms;
 }
 
-/* Home Indicator Bar */
-.phone-home-indicator {
-  width: 76px;
-  height: 4px;
-  background-color: var(--base-400);
-  border-radius: 999px;
-  margin: 6px auto 2px auto;
-  flex-shrink: 0;
-}
-
 /* 4) CONTACT ACTIONS (Download Resume, LinkedIn, GitHub) */
 .phone-actions-container {
   pointer-events: auto;
@@ -1640,6 +1586,7 @@
   flex-direction: column;
   align-items: flex-start;
   transition: opacity 150ms ease;
+  z-index: 90;
 }
 
 .phone-actions-header-label {
@@ -1664,10 +1611,26 @@
   text-decoration: none;
 }
 
+/* Desktop layout (>= 1000px): vertical stack beside phone with 32px gap, vertically centered */
+@media (min-width: 1000px) {
+  .phone-actions-container {
+    position: fixed;
+    left: calc(50% + 210px);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+/* Mobile layout (< 1000px): wrapping row under phone */
 @media (max-width: 999px) {
   .phone-actions-container {
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
     align-items: center;
     width: 100%;
+    max-width: 440px;
   }
 
   .phone-actions-header-label {
@@ -1679,6 +1642,7 @@
     flex-wrap: wrap;
     justify-content: center;
     gap: 8px;
+    padding: 0 12px;
   }
 
   .phone-action-pill {
@@ -1718,10 +1682,10 @@
   transition: opacity 250ms ease 200ms, transform 250ms ease 200ms;
 }
 
-/* 6) CLOSING REVERSE SEQUENCES
+/* 5) CLOSING REVERSE SEQUENCES
    - Step 1: close-content (form & actions fade out over 150ms)
    - Step 2: close-screen (screen turns off over 150ms)
-   - Step 3: close-zoom (phone shrinks back 600ms, dim overlay fades) */
+   - Step 3: close-zoom (phone shrinks back 800ms, dim overlay fades) */
 .close-content .mail-form-body,
 .close-content .notes-app-screen,
 .close-content.phone-actions-container,
@@ -1737,11 +1701,10 @@
   transition: opacity 150ms ease !important;
 }
 
-/* 7) PREFERS REDUCED MOTION */
+/* 6) PREFERS REDUCED MOTION */
 @media (prefers-reduced-motion: reduce) {
-  .phone-device-chassis {
+  .hand-phone-clone {
     transition: opacity 150ms ease !important;
-    transform: none !important;
   }
 
   .phone-screen-light-layer {

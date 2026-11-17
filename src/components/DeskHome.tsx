@@ -7,6 +7,7 @@ import {
 } from '../data/driftKeyframes';
 import { HeroLine, type HeroWord } from './HeroLine';
 import { StickMan } from './StickMan';
+import { computeDeskObjectEngineState, type DeskObjectEngineState } from '../data/phoneEngine';
 
 interface Spark {
   id: number;
@@ -352,6 +353,19 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
         renderFrame(currentRef.current, a, isEnteringAwayRef.current);
       };
       (window as unknown as { __getBlendA?: () => number }).__getBlendA = () => blendARef.current;
+      (window as unknown as { __getDeskObjectEngineState?: (id?: string) => DeskObjectEngineState }).__getDeskObjectEngineState = (id = 'ruler') => {
+        const stageW = cachedStageSize.current.width || window.innerWidth;
+        const stageH = cachedStageSize.current.height || window.innerHeight;
+        return computeDeskObjectEngineState(
+          id,
+          currentRef.current,
+          blendARef.current,
+          isMobileRef.current,
+          isEnteringAwayRef.current,
+          stageW,
+          stageH
+        );
+      };
     }
 
     let resizeTimer: number | null = null;

@@ -1,5 +1,12 @@
-import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from 'react';
 import { profileData } from '../data/profile';
+import { PHONE_SCREEN } from '../data/phoneScreen';
+import {
+  computeDeskObjectEngineState,
+  shortestRotationDeg,
+  type DeskObjectEngineState,
+} from '../data/phoneEngine';
+import { preloadLargePhoneImage } from '../utils/preloadImage';
 
 interface PhoneModalProps {
   view: 'about' | 'contact';
@@ -8,13 +15,6 @@ interface PhoneModalProps {
   onClose: () => void;
   onCloseComplete?: () => void;
   onSwitchView: (view: 'about' | 'contact') => void;
-}
-
-interface FlipParams {
-  deltaX: number;
-  deltaY: number;
-  scale: number;
-  rotation: number;
 }
 
 export const PhoneModal: React.FC<PhoneModalProps> = ({
@@ -26,10 +26,11 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
   onSwitchView,
 }) => {
   const modalRootRef = useRef<HTMLDivElement>(null);
-  const phoneChassisRef = useRef<HTMLDivElement>(null);
+  const cloneRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
   const fromInputRef = useRef<HTMLInputElement>(null);
   const isClosingRef = useRef<boolean>(false);
-  const flipParamsRef = useRef<FlipParams>({ deltaX: 0, deltaY: 0, scale: 0.35, rotation: 0 });
+  const activeAnimationRef = useRef<Animation | null>(null);
 
   const [isReducedMotion] = useState<boolean>(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
@@ -38,9 +39,46 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
     return false;
   });
 
-  // Animation states
-  // 'initial' -> 'zooming' -> 'screen-off-pause' -> 'screen-turning-on' -> 'form-stagger' -> 'actions-stagger' -> 'ready'
-  // When closing: 'closing-content' -> 'closing-screen' -> 'closing-zoom' -> 'closed'
+  // Target sizing and layout calculated purely from viewport
+  const dims = useMemo(() => {
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 1366;
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 642;
+    const isMobile = vw < 700;
+
+    // Sizing: screen height about min(80svh, 560px), smaller on mobile so actions fit in 100svh
+    const hScreen = Math.min(isMobile ? vh * 0.58 : vh * 0.8, 560);
+    const targetScale = hScreen / PHONE_SCREEN.size.heightNative; // 426
+
+    const wImage = PHONE_SCREEN.imageWidth * targetScale; // 480 * s
+    const hImage = PHONE_SCREEN.imageHeight * targetScale; // 650 * s
+    const wScreen = PHONE_SCREEN.size.widthNative * targetScale; // 198 * s
+    const xScreenInImg = PHONE_SCREEN.center.xNative * targetScale; // 295 * s
+    const yScreenInImg = PHONE_SCREEN.center.yNative * targetScale; // 250 * s
+    const rCorner = PHONE_SCREEN.cornerRadiusNative * targetScale; // 22 * s
+
+    // Centering: center of screen horizontally in viewport
+    const targetScreenX = vw / 2;
+    // On 1366x642 and others: keep top clear of nav pills (y=26..62px)
+    const targetScreenY = Math.max(76 + hScreen / 2, vh / 2);
+
+    return {
+      targetScale,
+      wImage,
+      hImage,
+      wScreen,
+      hScreen,
+      xScreenInImg,
+      yScreenInImg,
+      rCorner,
+      targetScreenX,
+      targetScreenY,
+    };
+  }, []);
+
+  // Stored transforms for closing animation
+  const targetTransformRef = useRef<string>('');
+  const targetRotRef = useRef<number>(-PHONE_SCREEN.tiltAngleDeg);
+
   const [isZoomed, setIsZoomed] = useState<boolean>(() => isDirectLoad || isReducedMotion);
   const [screenOn, setScreenOn] = useState<boolean>(() => isDirectLoad || isReducedMotion);
   const [formVisible, setFormVisible] = useState<boolean>(() => isDirectLoad || isReducedMotion);
@@ -54,51 +92,19 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
   const [message, setMessage] = useState('');
   const [isCopied, setIsCopied] = useState(false);
 
-  // Restore desk object opacity helper
+  // Helper to restore original desk object
   const restoreDeskObject = useCallback(() => {
     const rulerEl = document.querySelector<HTMLElement>('.desk-object-ruler');
     if (rulerEl) {
       rulerEl.style.transition = '';
       rulerEl.style.opacity = '';
+      rulerEl.style.visibility = '';
       rulerEl.style.pointerEvents = '';
       rulerEl.classList.remove('desk-phone-hidden');
     }
   }, []);
 
-  // Compute desk object bounding rect & FLIP parameters
-  const getDeskPhoneRect = useCallback((): { rect: DOMRect; rotation: number } | null => {
-    const rulerEl = document.querySelector<HTMLElement>('.desk-object-ruler');
-    if (!rulerEl) return null;
-
-    const style = window.getComputedStyle(rulerEl);
-    if (style.display === 'none' || style.visibility === 'hidden') {
-      return null;
-    }
-
-    const rect = rulerEl.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-
-    // Check if rect is usable (has dimensions and is on screen)
-    if (rect.width <= 0 || rect.height <= 0) return null;
-    if (rect.bottom < 30 || rect.top > vh - 30 || rect.right < 30 || rect.left > vw - 30) {
-      return null;
-    }
-
-    // Read current rotation from transform matrix
-    let rot = -10; // Default config rotation for ruler
-    const tr = style.transform;
-    if (tr && tr !== 'none' && tr.startsWith('matrix(')) {
-      const parts = tr.slice(7, -1).split(',').map(parseFloat);
-      if (parts.length >= 2) {
-        rot = Math.round(Math.atan2(parts[1], parts[0]) * (180 / Math.PI));
-      }
-    }
-
-    return { rect, rotation: rot };
-  }, []);
-
-  // Measure and initialize FLIP animation at mount
+  // Run zoom transition using Web Animations API
   useLayoutEffect(() => {
     const prefersReduced =
       typeof window !== 'undefined' &&
@@ -108,128 +114,150 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
     // Dim desk overlay immediately
     document.body.classList.add('desk-dimmed');
 
-    if (isDirectLoad || prefersReduced) {
-      // Direct load or reduced motion: skip FLIP animation completely
-      const rulerEl = document.querySelector<HTMLElement>('.desk-object-ruler');
-      if (rulerEl) {
-        rulerEl.style.opacity = '0';
-        rulerEl.style.pointerEvents = 'none';
-        rulerEl.classList.add('desk-phone-hidden');
-      }
+    const cloneEl = cloneRef.current;
+    const rulerEl = document.querySelector<HTMLElement>('.desk-object-ruler');
 
-      // Move focus to From field if in Contact view
+    // Get current engine state of desk ruler object (no getBoundingClientRect)
+    let engineState: DeskObjectEngineState | null = null;
+    if (typeof window !== 'undefined') {
+      const getEngine = (window as unknown as { __getDeskObjectEngineState?: (id?: string) => DeskObjectEngineState })
+        .__getDeskObjectEngineState;
+      if (getEngine) {
+        engineState = getEngine('ruler');
+      } else {
+        engineState = computeDeskObjectEngineState(
+          'ruler',
+          0,
+          0,
+          window.innerWidth < 700,
+          false,
+          window.innerWidth,
+          window.innerHeight
+        );
+      }
+    }
+
+    const startRot = engineState && engineState.isAvailable ? engineState.rotation : 0;
+    // Shortest rotation path so screen becomes upright (-PHONE_SCREEN.tiltAngleDeg = -12.6deg)
+    const targetRot = shortestRotationDeg(startRot, -PHONE_SCREEN.tiltAngleDeg);
+    targetRotRef.current = targetRot;
+
+    const targetTx = dims.targetScreenX - dims.xScreenInImg;
+    const targetTy = dims.targetScreenY - dims.yScreenInImg;
+    const targetTransform = `translate3d(${targetTx}px, ${targetTy}px, 0) rotate(${targetRot}deg) scale(1)`;
+    targetTransformRef.current = targetTransform;
+
+    // Immediately hide original desk object (visibility hidden)
+    if (rulerEl) {
+      rulerEl.style.visibility = 'hidden';
+      rulerEl.style.opacity = '0';
+      rulerEl.style.pointerEvents = 'none';
+      rulerEl.classList.add('desk-phone-hidden');
+    }
+
+    if (!cloneEl) return;
+
+    if (isDirectLoad || prefersReduced) {
+      // Direct load or reduced motion: set final transform
+      cloneEl.style.transform = targetTransform;
+      cloneEl.style.opacity = '1';
+
+      requestAnimationFrame(() => {
+        setIsZoomed(true);
+        setScreenOn(true);
+        setFormVisible(true);
+        setActionsVisible(true);
+      });
+
       if (view === 'contact') {
-        setTimeout(() => {
+        const timer = setTimeout(() => {
           fromInputRef.current?.focus({ preventScroll: true });
         }, 50);
+        return () => clearTimeout(timer);
       }
       return;
     }
 
-    // Normal motion: Compute start rect and target centered position
-    const deskPhone = getDeskPhoneRect();
-    const phoneEl = phoneChassisRef.current;
-    if (!phoneEl) return;
+    // Determine start transform
+    let startTx = 0;
+    let startTy = 0;
+    let startScale = 0.35;
 
-    // Get phone's final rest dimensions
-    const phoneRect = phoneEl.getBoundingClientRect();
-    const phoneWidth = phoneRect.width > 0 ? phoneRect.width : 280;
-    const phoneHeight = phoneRect.height > 0 ? phoneRect.height : 546;
-
-    const targetCenterX = window.innerWidth / 2;
-    // Keep target top at least 80px below top of viewport to never overlap nav pills (y=26..62px)
-    const targetCenterY = Math.max(80 + phoneHeight / 2, window.innerHeight / 2);
-
-    let deltaX = 0;
-    let deltaY = (window.innerHeight - targetCenterY) + 60;
-    let scale = 0.35;
-    let rotation = 0;
-
-    const rulerEl = document.querySelector<HTMLElement>('.desk-object-ruler');
-
-    if (deskPhone) {
-      const { rect: startRect, rotation: startRot } = deskPhone;
-      scale = startRect.width / phoneWidth;
-      const startCenterX = startRect.left + startRect.width / 2;
-      const startCenterY = startRect.top + startRect.height / 2;
-      deltaX = startCenterX - targetCenterX;
-      deltaY = startCenterY - targetCenterY;
-      rotation = startRot;
-
-      // Cross-fade: Hide desk object over first 200ms
-      if (rulerEl) {
-        rulerEl.style.transition = 'opacity 200ms ease-out';
-        rulerEl.style.opacity = '0';
-        rulerEl.style.pointerEvents = 'none';
-        rulerEl.classList.add('desk-phone-hidden');
-      }
+    if (engineState && engineState.isAvailable) {
+      startTx = engineState.screenCenterX - dims.xScreenInImg;
+      startTy = engineState.screenCenterY - dims.yScreenInImg;
+      startScale = engineState.width / dims.wImage;
     } else {
-      // Fallback: growing from bottom center at scale 0.35
-      if (rulerEl) {
-        rulerEl.style.transition = 'opacity 200ms ease-out';
-        rulerEl.style.opacity = '0';
-        rulerEl.style.pointerEvents = 'none';
-        rulerEl.classList.add('desk-phone-hidden');
-      }
+      // Fallback: start from bottom center at scale 0.35
+      startTx = window.innerWidth / 2 - dims.xScreenInImg;
+      startTy = window.innerHeight + 60 - dims.yScreenInImg;
+      startScale = 0.35;
     }
 
-    flipParamsRef.current = { deltaX, deltaY, scale, rotation };
+    const startTransform = `translate3d(${startTx}px, ${startTy}px, 0) rotate(${startRot}deg) scale(${startScale})`;
 
-    // Set phone to start transform and opacity 0
-    phoneEl.style.willChange = 'transform';
-    phoneEl.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scale}) rotate(${rotation}deg)`;
-    phoneEl.style.opacity = '0';
+    cloneEl.style.willChange = 'transform';
+    cloneEl.style.transform = startTransform;
+    cloneEl.style.opacity = '1';
 
-    // Start 750ms zoom animation in next frame
-    const rafId = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (!phoneEl) return;
-        phoneEl.style.transition =
-          'transform 750ms cubic-bezier(.22, 1, .36, 1), opacity 200ms ease-out';
-        phoneEl.style.transform = 'translate3d(0, 0, 0) scale(1) rotate(0deg)';
-        phoneEl.style.opacity = '1';
-      });
+    let isCancelled = false;
+
+    // Ensure high-res image is decoded before animation runs
+    preloadLargePhoneImage().then(() => {
+      if (isCancelled || !cloneEl) return;
+
+      // Animate clone with Web Animations API using transform only
+      const anim = cloneEl.animate(
+        [
+          { transform: startTransform },
+          { transform: targetTransform },
+        ],
+        {
+          duration: 900,
+          easing: 'cubic-bezier(0.25, 0.8, 0.25, 1)',
+          fill: 'forwards',
+        }
+      );
+      activeAnimationRef.current = anim;
+
+      anim.onfinish = () => {
+        if (isCancelled || !cloneEl) return;
+        cloneEl.style.willChange = 'auto';
+        cloneEl.style.transform = targetTransform;
+        setIsZoomed(true);
+
+        // 100ms after zoom ends, screen switches on with flicker
+        setTimeout(() => {
+          if (isCancelled) return;
+          setScreenOn(true);
+          setFormVisible(true);
+
+          // Focus moves to From field
+          setTimeout(() => {
+            if (isCancelled) return;
+            if (view === 'contact') {
+              fromInputRef.current?.focus({ preventScroll: true });
+            }
+          }, 320);
+
+          // Contact actions fade in after form with 80ms stagger
+          setTimeout(() => {
+            if (isCancelled) return;
+            setActionsVisible(true);
+          }, 300);
+        }, 100);
+      };
     });
 
-    // 1) Zoom finishes at 750ms
-    const zoomTimer = setTimeout(() => {
-      if (phoneEl) {
-        phoneEl.style.willChange = 'auto';
-        phoneEl.style.transform = '';
-        phoneEl.style.transition = '';
-      }
-      setIsZoomed(true);
-
-      // 2) 100ms after zoom ends (at 850ms), screen turns on with 300ms flicker
-      const screenTimer = setTimeout(() => {
-        setScreenOn(true);
-        setFormVisible(true);
-
-        // Move focus to From field without scrolling
-        setTimeout(() => {
-          if (view === 'contact') {
-            fromInputRef.current?.focus({ preventScroll: true });
-          }
-        }, 320);
-
-        // 3) Form rows stagger finishes, then actions appear with 80ms stagger
-        const actionsTimer = setTimeout(() => {
-          setActionsVisible(true);
-        }, 300);
-
-        return () => clearTimeout(actionsTimer);
-      }, 100);
-
-      return () => clearTimeout(screenTimer);
-    }, 750);
-
     return () => {
-      cancelAnimationFrame(rafId);
-      clearTimeout(zoomTimer);
+      isCancelled = true;
+      if (activeAnimationRef.current) {
+        activeAnimationRef.current.cancel();
+      }
     };
-  }, [isDirectLoad, getDeskPhoneRect, view]);
+  }, [isDirectLoad, dims, view]);
 
-  // Clean up body dimming on unmount
+  // Clean up body dimming class on unmount
   useEffect(() => {
     return () => {
       document.body.classList.remove('desk-dimmed');
@@ -237,10 +265,10 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
   }, []);
 
   // REVERSE CLOSING SEQUENCE:
-  // 1. Form and actions fade out (150ms)
+  // 1. Actions and form fade out (150ms)
   // 2. Screen turns off (150ms)
-  // 3. Phone shrinks back into desk object's rect while overlay fades out (~600ms)
-  // 4. Restore desk object, navigate to #/, return focus to Contact/About pill
+  // 3. Re-read object's CURRENT center, rotation and width from engine, animate clone back (800ms)
+  // 4. Remove clone, restore original object, navigate to #/, return focus to Contact pill
   const triggerClose = useCallback(() => {
     if (isClosingRef.current) return;
     isClosingRef.current = true;
@@ -251,12 +279,11 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReduced) {
-      // prefers-reduced-motion: 150ms fade out only
       setIsDimOverlayVisible(false);
-      const phoneEl = phoneChassisRef.current;
-      if (phoneEl) {
-        phoneEl.style.transition = 'opacity 150ms ease';
-        phoneEl.style.opacity = '0';
+      const cloneEl = cloneRef.current;
+      if (cloneEl) {
+        cloneEl.style.transition = 'opacity 150ms ease';
+        cloneEl.style.opacity = '0';
       }
       setTimeout(() => {
         restoreDeskObject();
@@ -266,7 +293,7 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
       return;
     }
 
-    // Step 1: Form and actions fade out (150ms)
+    // Step 1: Actions and form fade out (150ms)
     setClosePhase('content');
 
     setTimeout(() => {
@@ -274,39 +301,70 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
       setClosePhase('screen');
 
       setTimeout(() => {
-        // Step 3: Phone shrinks back into phone object's rect over 600ms
+        // Step 3: Animate clone back to desk object's current position (800ms)
         setClosePhase('zoom');
         setIsDimOverlayVisible(false);
 
-        const params = flipParamsRef.current;
-        const phoneEl = phoneChassisRef.current;
-        if (phoneEl) {
-          phoneEl.style.willChange = 'transform';
-          phoneEl.style.transition =
-            'transform 600ms cubic-bezier(.22, 1, .36, 1), opacity 200ms ease 400ms';
-          phoneEl.style.transform = `translate3d(${params.deltaX}px, ${params.deltaY}px, 0) scale(${params.scale}) rotate(${params.rotation}deg)`;
-          phoneEl.style.opacity = '0';
+        const cloneEl = cloneRef.current;
+
+        // Re-read current engine state
+        let currentEngine: DeskObjectEngineState | null = null;
+        if (typeof window !== 'undefined') {
+          const getEngine = (window as unknown as { __getDeskObjectEngineState?: (id?: string) => DeskObjectEngineState })
+            .__getDeskObjectEngineState;
+          if (getEngine) {
+            currentEngine = getEngine('ruler');
+          }
         }
 
-        // Fade desk object back to opacity 1 over the last 200ms of the zoom
-        const rulerEl = document.querySelector<HTMLElement>('.desk-object-ruler');
-        if (rulerEl) {
-          rulerEl.style.transition = 'opacity 200ms ease 400ms';
-          rulerEl.style.opacity = '1';
-          rulerEl.style.pointerEvents = '';
+        let returnTx = 0;
+        let returnTy = 0;
+        let returnScale = 0.35;
+        let returnRot = targetRotRef.current;
+
+        if (currentEngine && currentEngine.isAvailable) {
+          returnTx = currentEngine.screenCenterX - dims.xScreenInImg;
+          returnTy = currentEngine.screenCenterY - dims.yScreenInImg;
+          returnScale = currentEngine.width / dims.wImage;
+          returnRot = shortestRotationDeg(targetRotRef.current, currentEngine.rotation);
+        } else {
+          returnTx = window.innerWidth / 2 - dims.xScreenInImg;
+          returnTy = window.innerHeight + 80 - dims.yScreenInImg;
+          returnScale = 0.35;
+          returnRot = targetRotRef.current;
         }
 
-        // Step 4: End of reverse sequence (600ms later)
-        setTimeout(() => {
+        const returnTransform = `translate3d(${returnTx}px, ${returnTy}px, 0) rotate(${returnRot}deg) scale(${returnScale})`;
+
+        if (cloneEl) {
+          cloneEl.style.willChange = 'transform';
+          const returnAnim = cloneEl.animate(
+            [
+              { transform: targetTransformRef.current, opacity: '1' },
+              { transform: returnTransform, opacity: '0' },
+            ],
+            {
+              duration: 800,
+              easing: 'cubic-bezier(0.25, 0.8, 0.25, 1)',
+              fill: 'forwards',
+            }
+          );
+
+          returnAnim.onfinish = () => {
+            restoreDeskObject();
+            onClose();
+            onCloseComplete?.();
+          };
+        } else {
           restoreDeskObject();
           onClose();
           onCloseComplete?.();
-        }, 600);
+        }
       }, 150);
     }, 150);
-  }, [onClose, onCloseComplete, restoreDeskObject]);
+  }, [onClose, onCloseComplete, restoreDeskObject, dims]);
 
-  // Handle external closing trigger (e.g. browser back button or nav Back pill)
+  // Handle external closing trigger (browser back or nav back pill)
   useEffect(() => {
     if (isClosing && !isClosingRef.current) {
       triggerClose();
@@ -322,7 +380,7 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
         return;
       }
 
-      // Trap focus inside phone AND action buttons
+      // Trap focus inside phone dialog AND action buttons
       if (e.key === 'Tab' && modalRootRef.current) {
         const focusable = modalRootRef.current.querySelectorAll<HTMLElement>(
           'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -371,50 +429,62 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
 
   return (
     <div className="phone-modal-root" ref={modalRootRef}>
-      {/* 2) FULL-SCREEN DESK DIMMING OVERLAY */}
+      {/* 3) FULL-SCREEN OVERLAY: Warm dark tint rgba(60,50,35,0.30), no blur */}
       <div
         className={`desk-dim-overlay ${isDimOverlayVisible ? 'is-visible' : ''} ${closePhase === 'zoom' ? 'is-fading-out' : ''}`}
         onClick={triggerClose}
         aria-hidden="true"
       />
 
-      {/* PHONE AND ACTIONS LAYOUT CONTAINER */}
-      <div className="phone-modal-layout">
-        {/* 1) & 5) PHONE DEVICE CHASSIS (Portrait 1:1.95 ratio) */}
+      {/* DIALOG ACCESSIBILITY CONTAINER */}
+      <div
+        className="phone-dialog-wrap"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="phone-dialog-heading"
+      >
+        {/* Sole <h1> on page when dialog is open */}
+        <h1 id="phone-dialog-heading" className="sr-only">
+          {view === 'contact' ? 'Contact' : 'About'}
+        </h1>
+
+        {/* 2) & 4) ANIMATING CLONE OF DESK OBJECT (The Hand Holding Phone Image) */}
         <div
-          ref={phoneChassisRef}
-          className={`phone-device-chassis torn-paper-edge ${isZoomed ? 'is-zoomed' : ''} ${screenOn ? 'screen-on' : 'screen-off'} ${closePhase ? `close-${closePhase}` : ''}`}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="phone-dialog-heading"
+          ref={cloneRef}
+          className={`hand-phone-clone ${isZoomed ? 'is-zoomed' : ''} ${closePhase ? `close-${closePhase}` : ''}`}
+          style={{
+            width: `${dims.wImage}px`,
+            height: `${dims.hImage}px`,
+            transformOrigin: `${dims.xScreenInImg}px ${dims.yScreenInImg}px`,
+          }}
+          aria-hidden="true"
         >
-          {/* Sole <h1> on page when phone is open */}
-          <h1 id="phone-dialog-heading" className="sr-only">
-            {view === 'contact' ? 'Contact' : 'About'}
-          </h1>
+          {/* Engraved Hand Holding Smartphone Image */}
+          <img
+            src="/desk/hand-phone-large.webp"
+            alt=""
+            aria-hidden="true"
+            className="hand-phone-img"
+            draggable={false}
+          />
 
-          {/* Crack Texture (always visible on screen) */}
-          <svg className="phone-crack-svg" viewBox="0 0 340 680" fill="none" aria-hidden="true">
-            <path
-              d="M320 40 L285 75 L292 90 L260 125 M285 75 L250 82 M260 125 L230 160 M260 125 L275 145"
-              stroke="currentColor"
-              strokeWidth="0.9"
-              strokeLinecap="round"
-            />
-          </svg>
-
-          {/* Top Speaker Notch / Dynamic Island */}
-          <div className="phone-notch-bar" aria-hidden="true">
-            <div className="phone-speaker-slot"></div>
-            <div className="phone-camera-lens"></div>
-          </div>
-
-          {/* 3) PHONE DISPLAY SCREEN: Arrives OFF, switches ON 100ms after zoom */}
-          <div className={`phone-screen-frame ${screenOn ? 'screen-active' : 'screen-dark'}`}>
-            {/* Light screen layer that flickers on */}
+          {/* 4) SCREEN UI CONTAINER: Placed and rotated over calibrated screen quad */}
+          <div
+            className={`phone-screen-container ${screenOn ? 'screen-on' : 'screen-off'}`}
+            style={{
+              left: `${dims.xScreenInImg}px`,
+              top: `${dims.yScreenInImg}px`,
+              width: `${dims.wScreen}px`,
+              height: `${dims.hScreen}px`,
+              borderRadius: `${dims.rCorner}px`,
+              transform: `translate(-50%, -50%) rotate(${PHONE_SCREEN.tiltAngleDeg}deg)`,
+              transformOrigin: '50% 50%',
+            }}
+          >
+            {/* Opaque Light Screen Layer that turns on 100ms after zoom */}
             <div className={`phone-screen-light-layer ${screenOn ? 'layer-on' : 'layer-off'}`}>
               {/* ==========================================================
-                  VIEW 1: ABOUT (Notes App)
+                  VIEW 1: ABOUT (Notes Screen)
                  ========================================================== */}
               {view === 'about' ? (
                 <div className="notes-app-screen">
@@ -424,18 +494,16 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                       type="button"
                       className="notes-back-btn"
                       onClick={triggerClose}
-                      aria-label="Done with notes, back to desk"
+                      aria-label="Back to desk"
                     >
-                      ‹ <span className="font-body">Desk</span>
+                      ‹ Desk
                     </button>
-                    <span className="notes-app-title font-handwriting">
-                      Notes
-                    </span>
+                    <span className="notes-app-title">Notes</span>
                     <button
                       type="button"
                       className="notes-switch-btn font-handwriting"
                       onClick={() => onSwitchView('contact')}
-                      aria-label="Switch to Mail Contact app"
+                      aria-label="Switch to Email contact app"
                     >
                       Email ✉
                     </button>
@@ -452,8 +520,8 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                       <img
                         src="/avatar-placeholder.svg"
                         alt="Hand-drawn portrait illustration of Saadhana Karthikeyan"
-                        width={180}
-                        height={215}
+                        width={140}
+                        height={168}
                         className="notes-avatar-img"
                         loading="eager"
                       />
@@ -462,38 +530,38 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                     {/* Profile Fields List */}
                     <div className={`notes-fields-list ${formVisible ? 'notes-row-stagger-3' : 'row-hidden'}`}>
                       <div className="notes-field-row">
-                        <span className="field-label font-handwriting">Name:</span>
-                        <span className="field-value font-body">{profileData.name}</span>
+                        <span className="field-label">Name:</span>
+                        <span className="field-value">{profileData.name}</span>
                       </div>
 
                       <div className="notes-field-row">
-                        <span className="field-label font-handwriting">Studying:</span>
-                        <span className="field-value font-body">{profileData.studying}</span>
+                        <span className="field-label">Studying:</span>
+                        <span className="field-value">{profileData.studying}</span>
                       </div>
 
                       <div className="notes-field-row">
-                        <span className="field-label font-handwriting">Good at:</span>
-                        <span className="field-value font-body">{profileData.goodAt}</span>
+                        <span className="field-label">Good at:</span>
+                        <span className="field-value">{profileData.goodAt}</span>
                       </div>
 
                       <div className="notes-field-row">
-                        <span className="field-label font-handwriting">Lately building:</span>
-                        <span className="field-value font-body">{profileData.latelyBuilding}</span>
+                        <span className="field-label">Lately building:</span>
+                        <span className="field-value">{profileData.latelyBuilding}</span>
                       </div>
 
                       <div className="notes-field-row">
-                        <span className="field-label font-handwriting">Interested in:</span>
-                        <span className="field-value font-body">{profileData.interestedIn}</span>
+                        <span className="field-label">Interested in:</span>
+                        <span className="field-value">{profileData.interestedIn}</span>
                       </div>
 
                       <div className="notes-field-row">
-                        <span className="field-label font-handwriting">Languages:</span>
-                        <span className="field-value font-body">{profileData.languages}</span>
+                        <span className="field-label">Languages:</span>
+                        <span className="field-value">{profileData.languages}</span>
                       </div>
 
                       <div className="notes-field-row">
-                        <span className="field-label font-handwriting">Based in:</span>
-                        <span className="field-value font-body">{profileData.basedIn}</span>
+                        <span className="field-label">Based in:</span>
+                        <span className="field-value">{profileData.basedIn}</span>
                       </div>
                     </div>
 
@@ -504,7 +572,7 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                 </div>
               ) : (
                 /* ==========================================================
-                   VIEW 2: CONTACT (Mail App)
+                   VIEW 2: CONTACT (Mail Screen)
                    ========================================================== */
                 <div className="mail-app-screen">
                   {/* Mail App Top Bar */}
@@ -513,17 +581,15 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                       type="button"
                       className="mail-cancel-btn"
                       onClick={triggerClose}
-                      aria-label="Cancel and close email"
+                      aria-label="Cancel message"
                     >
                       Cancel
                     </button>
-                    <span className="mail-app-title font-handwriting">
-                      New Message
-                    </span>
+                    <span className="mail-app-title">New Message</span>
                     <button
                       type="submit"
                       form="mail-contact-form"
-                      className="mail-send-btn font-handwriting"
+                      className="mail-send-btn"
                       aria-label="Send email via mail application"
                     >
                       Send
@@ -545,6 +611,7 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                         value={fromEmail}
                         onChange={(e) => setFromEmail(e.target.value)}
                         className="mail-input"
+                        autoComplete="email"
                       />
                     </div>
 
@@ -560,7 +627,7 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                           readOnly
                           value={profileData.email}
                           className="mail-input mail-input-readonly"
-                          aria-label="Recipient email address fixed to saadhanak18@gmail.com"
+                          aria-label="Recipient email address saadhanak18@gmail.com"
                         />
                         <button
                           type="button"
@@ -586,10 +653,10 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                         className="mail-select"
                         required
                       >
-                        <option value="Internship">Internship Opportunity</option>
-                        <option value="Collaboration">Project Collaboration</option>
-                        <option value="Hackathon team">Hackathon Team</option>
-                        <option value="Just saying hi">Just saying hi 👋</option>
+                        <option value="Internship">Internship</option>
+                        <option value="Collaboration">Collaboration</option>
+                        <option value="Hackathon team">Hackathon team</option>
+                        <option value="Just saying hi">Just saying hi</option>
                       </select>
                     </div>
 
@@ -604,12 +671,12 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         className="mail-textarea"
-                        rows={5}
+                        rows={4}
                         required
                       />
                     </div>
 
-                    {/* 5. Send Row */}
+                    {/* 5. Primary Send Button */}
                     <div className={`mail-submit-row ${formVisible ? 'form-row-stagger-5' : 'row-hidden'}`}>
                       <button
                         type="submit"
@@ -624,17 +691,15 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
               )}
             </div>
           </div>
-
-          {/* Bottom Home Indicator Bar */}
-          <div className="phone-home-indicator" aria-hidden="true"></div>
         </div>
 
         {/* ==========================================================
-            4) CONTACT ACTIONS
+            4) CONTACT ACTIONS (Download Resume, LinkedIn, View source)
             Desktop (>= 1000px): Vertical stack at right with 32px gap
             Mobile (< 1000px): Wrapping row under phone
            ========================================================== */}
         <div
+          ref={actionsRef}
           className={`phone-actions-container ${actionsVisible ? 'actions-visible' : 'actions-hidden'} ${closePhase ? `close-${closePhase}` : ''}`}
           role="region"
           aria-label="Professional Links and Resume"

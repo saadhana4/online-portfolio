@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { preloadLargePhoneImage } from '../utils/preloadImage';
 
 interface HeaderProps {
   currentRoute: string;
@@ -217,6 +218,8 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate, onBegi
                   e.preventDefault();
                   handleLinkClick('about');
                 }}
+                onMouseEnter={preloadLargePhoneImage}
+                onFocus={preloadLargePhoneImage}
               >
                 <svg className="note-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -235,6 +238,8 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate, onBegi
                   e.preventDefault();
                   handleLinkClick('contact');
                 }}
+                onMouseEnter={preloadLargePhoneImage}
+                onFocus={preloadLargePhoneImage}
               >
                 <svg className="mail-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
@@ -353,6 +358,8 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate, onBegi
               e.preventDefault();
               handleLinkClick('about');
             }}
+            onMouseEnter={preloadLargePhoneImage}
+            onFocus={preloadLargePhoneImage}
             aria-current={currentRoute === 'about' ? 'page' : undefined}
           >
             <svg className="note-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -372,6 +379,8 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate, onBegi
               e.preventDefault();
               handleLinkClick('contact');
             }}
+            onMouseEnter={preloadLargePhoneImage}
+            onFocus={preloadLargePhoneImage}
             aria-current={currentRoute === 'contact' ? 'page' : undefined}
           >
             <svg className="mail-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
