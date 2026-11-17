@@ -402,6 +402,12 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
       const handleKeyDown = (e: KeyboardEvent) => {
         if (reducedMotionRef.current || blendARef.current > 0.01) return;
 
+        const k = e.key.toLowerCase();
+        // Stickman controls must NEVER drift desk objects
+        if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) {
+          return;
+        }
+
         const active = document.activeElement as HTMLElement | null;
         if (
           active &&
@@ -416,10 +422,10 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
         }
 
         let handled = false;
-        if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+        if (e.key === 'PageDown') {
           targetRef.current += 0.08;
           handled = true;
-        } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        } else if (e.key === 'PageUp') {
           targetRef.current -= 0.08;
           handled = true;
         } else if (e.key === 'Home') {

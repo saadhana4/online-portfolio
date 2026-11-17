@@ -1387,8 +1387,7 @@
   width: 44px;
   height: 92px;
   z-index: 15; /* Above desk objects (z: 2..5), below modals (z: 100) */
-  pointer-events: auto;
-  cursor: pointer;
+  pointer-events: none; /* Purely keyboard controlled via A, W, D */
   user-select: none;
   mix-blend-mode: multiply;
   transform-origin: center bottom;
