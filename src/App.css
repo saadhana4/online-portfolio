@@ -1408,12 +1408,12 @@
   transform: translateX(-50%);
   white-space: nowrap;
   font-family: var(--font-handwriting, 'Caveat', cursive);
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #72685c;
   background: rgba(254, 252, 248, 0.94);
   border: 1px dashed #cfc5b4;
-  padding: 3px 9px 4px 9px;
+  padding: 2px 7px;
   border-radius: 6px;
   box-shadow: 0 1px 4px rgba(60, 50, 40, 0.08);
   transition: opacity 0.4s ease, transform 0.4s ease;

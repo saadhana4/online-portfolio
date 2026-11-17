@@ -21,14 +21,14 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
   const [hintText] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth < 700 || window.matchMedia('(pointer: coarse)').matches
-        ? 'Tap bottom to walk  •  Tap to jump ✎'
-        : 'A: left  •  W: jump  •  D: right ✎';
+        ? 'Tap: walk • W: jump'
+        : 'A ‹  W ⇡  D ›';
     }
-    return 'A: left  •  W: jump  •  D: right ✎';
+    return 'A ‹  W ⇡  D ›';
   });
 
   // State refs: X position along the bottom of the screen
-  const posXRef = useRef<number>(42);
+  const posXRef = useRef<number>(32);
   const targetXRef = useRef<number | null>(null);
   const facingRef = useRef<'right' | 'left'>('right');
   const keysDownRef = useRef<Set<string>>(new Set());
@@ -70,7 +70,7 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
     // Set initial X position in bottom-left clear area
     if (!isInitializedRef.current && typeof window !== 'undefined') {
       const isMobile = window.innerWidth < 700 || window.matchMedia('(pointer: coarse)').matches;
-      posXRef.current = isMobile ? 24 : Math.max(36, Math.min(60, window.innerWidth * 0.04));
+      posXRef.current = isMobile ? 20 : 32;
       isInitializedRef.current = true;
     }
 
