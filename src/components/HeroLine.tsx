@@ -6,31 +6,49 @@ interface HeroLineProps {
   currentWord: HeroWord;
   isAway?: boolean;
   isFadingIn?: boolean;
+  isPhoneOpen?: boolean;
 }
 
 export const HeroLine = forwardRef<HTMLDivElement, HeroLineProps>(
-  ({ currentWord, isAway = false, isFadingIn = false }, ref) => {
+  ({ currentWord, isAway = false, isFadingIn = false, isPhoneOpen = false }, ref) => {
+    const isHiddenOrInert = isAway || isPhoneOpen;
+
     return (
       <div
         ref={ref}
         className={`desk-hero-minimal ${isAway ? 'is-away' : ''} ${isFadingIn ? 'is-fading-in' : ''}`}
         role="region"
         aria-label="Introduction hero"
-        inert={isAway ? true : undefined}
-        aria-hidden={isAway ? 'true' : undefined}
+        inert={isHiddenOrInert ? true : undefined}
+        aria-hidden={isHiddenOrInert ? 'true' : undefined}
       >
-        <h1 className="hero-single-line">
-          <span className="hero-lead-text">Hey, I'm Saadhana and I build software that</span>{' '}
-          <span className="hero-word-slot">
-            <span
-              key={currentWord}
-              className="hero-cycling-word font-handwriting word-swap-fade"
-              aria-hidden="true"
-            >
-              {currentWord}
+        {isPhoneOpen ? (
+          <p className="hero-single-line" aria-hidden="true">
+            <span className="hero-lead-text">Hey, I'm Saadhana and I build software that</span>{' '}
+            <span className="hero-word-slot">
+              <span
+                key={currentWord}
+                className="hero-cycling-word font-handwriting word-swap-fade"
+                aria-hidden="true"
+              >
+                {currentWord}
+              </span>
             </span>
-          </span>
-        </h1>
+          </p>
+        ) : (
+          <h1 className="hero-single-line">
+            <span className="hero-lead-text">Hey, I'm Saadhana and I build software that</span>{' '}
+            <span className="hero-word-slot">
+              <span
+                key={currentWord}
+                className="hero-cycling-word font-handwriting word-swap-fade"
+                aria-hidden="true"
+              >
+                {currentWord}
+              </span>
+            </span>
+          </h1>
+        )}
 
         {/* Visually-hidden sentence for screen readers */}
         <p className="sr-only">

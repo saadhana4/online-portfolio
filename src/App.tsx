@@ -33,6 +33,25 @@ export const App: React.FC = () => {
     return false;
   });
   const [isTransitioningRoute, setIsTransitioningRoute] = useState<boolean>(false);
+
+  // Active phone modal state (persists during reverse closing sequence)
+  const [activePhoneView, setActivePhoneView] = useState<'about' | 'contact' | null>(() => {
+    if (typeof window !== 'undefined') {
+      const r = parseHash(window.location.hash);
+      return r === 'about' || r === 'contact' ? r : null;
+    }
+    return null;
+  });
+  const [isPhoneClosing, setIsPhoneClosing] = useState<boolean>(false);
+  const [isDirectLoad, setIsDirectLoad] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const r = parseHash(window.location.hash);
+      return r === 'about' || r === 'contact';
+    }
+    return false;
+  });
+  const lastClosedPhoneViewRef = useRef<'about' | 'contact'>('contact');
+
   const isInitialMount = useRef<boolean>(true);
   const prevRouteRef = useRef<RouteType>(
     typeof window !== 'undefined' ? parseHash(window.location.hash) : ''
@@ -46,7 +65,25 @@ export const App: React.FC = () => {
       prevRouteRef.current = route;
       setCurrentRoute(route);
 
+      if (route === 'contact' || route === 'about') {
+        setActivePhoneView(route);
+        setIsPhoneClosing(false);
+        lastClosedPhoneViewRef.current = route;
+      } else if (route === '' || route === 'work' || route === 'journey') {
+        // If navigating away while phone is open (e.g. browser back button or back pill)
+        setActivePhoneView((prev) => {
+          if (prev) {
+            setIsPhoneClosing(true);
+            return prev; // keep mounted until reverse closing finishes
+          }
+          return null;
+        });
+      }
+
       if (!isInitialMount.current) {
+        // Any navigation after initial mount is not a direct load
+        setIsDirectLoad(false);
+
         if ((route === 'work' || route === 'journey') && prevRoute === '') {
           setIsDriftingAway(true);
           setIsTransitioningRoute(true);
@@ -105,6 +142,21 @@ export const App: React.FC = () => {
     window.location.hash = route ? `#/${route}` : '#/';
   }, []);
 
+  const handlePhoneCloseComplete = useCallback(() => {
+    setActivePhoneView(null);
+    setIsPhoneClosing(false);
+    const viewToFocus = lastClosedPhoneViewRef.current;
+    if (window.location.hash !== '#/' && window.location.hash !== '') {
+      window.location.hash = '#/';
+    }
+    // Return focus to Contact or About pill
+    requestAnimationFrame(() => {
+      const targetSelector = viewToFocus === 'about' ? '.about-pill' : '.contact-pill';
+      const targetPill = document.querySelector<HTMLElement>(targetSelector);
+      targetPill?.focus();
+    });
+  }, []);
+
   const handleBeginDrift = useCallback((target: 'home' | 'away') => {
     if (target === 'away') {
       setIsDriftingAway(true);
@@ -116,6 +168,8 @@ export const App: React.FC = () => {
       setIsDriftingAway(false);
     }
   }, []);
+
+  const isPhoneOpen = activePhoneView !== null;
 
   return (
     <div className="app-container">
@@ -137,6 +191,7 @@ export const App: React.FC = () => {
         <DeskHome
           currentRoute={currentRoute}
           isDriftingAwayTrigger={isDriftingAway}
+          isPhoneOpen={isPhoneOpen}
         />
 
         {/* Route: Work Project Slider */}
@@ -153,11 +208,14 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* Route: About or Contact (Phone Overlay) */}
-        {(currentRoute === 'about' || currentRoute === 'contact') && (
+        {/* Route: About or Contact (Phone Overlay with zoom FLIP transition) */}
+        {activePhoneView && (
           <PhoneModal
-            view={currentRoute}
+            view={activePhoneView}
+            isDirectLoad={isDirectLoad}
+            isClosing={isPhoneClosing}
             onClose={() => navigateTo('')}
+            onCloseComplete={handlePhoneCloseComplete}
             onSwitchView={(newView) => navigateTo(newView)}
           />
         )}

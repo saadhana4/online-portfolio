@@ -1102,153 +1102,261 @@
 /* ==========================================================================
    PHONE MODAL (ABOUT & CONTACT) - RECOLORED TO BASE-100 / BASE-200
    ========================================================================== */
-.phone-modal-backdrop {
+/* ==========================================================================
+   PHONE MODAL (ABOUT & CONTACT) - FLIP ZOOM TRANSITION & PAPER SCRAPBOOK LOOK
+   ========================================================================== */
+/* 2) DESK DIMMING OVERLAY: Fades in over 500ms, warm dark tint rgba(60,50,35,0.30) */
+.desk-dim-overlay {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(12, 9, 8, 0.6);
-  backdrop-filter: blur(5px);
-  z-index: 200;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0 16px 20px 16px;
-  overflow-y: auto;
-  animation: fadeIn 0.25s ease-out;
+  background-color: rgba(60, 50, 35, 0.30);
+  opacity: 0;
+  transition: opacity 500ms ease;
+  z-index: 60; /* Above desk stage and burst layer (z <= 20), below phone (z: 80) and nav (z: 100) */
+  pointer-events: auto;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.desk-dim-overlay.is-visible {
+  opacity: 1;
 }
 
-.phone-modal-wrapper {
+.desk-dim-overlay.is-fading-out {
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+/* While phone is open, hide desk object phone-in-hand */
+.desk-surface-stage.phone-is-open .desk-object-ruler,
+.desk-object-ruler.desk-phone-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 200ms ease-out;
+}
+
+/* Modal Root Container: Positioned below nav (z-index 100), above dim overlay (z-index 60) */
+.phone-modal-root {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100svh;
+  z-index: 80;
+  pointer-events: none;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  max-width: 440px;
-  width: 100%;
-  animation: phoneRise 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  justify-content: center;
+  padding-top: 76px; /* Clear space below desktop nav pills (y=26..62px) */
+  padding-bottom: 16px;
+  box-sizing: border-box;
 }
 
-@keyframes phoneRise {
-  from {
-    transform: translateY(100%);
-    opacity: 0.5;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+.phone-modal-layout {
+  position: relative;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 4) CONTACT ACTIONS & PHONE CONTAINER LAYOUT
+   On screens 1000px and up: phone centered, actions vertical stack at right with 32px gap.
+   Under 1000px: flex column with wrapping row under phone. */
+@media (min-width: 1000px) {
+  .phone-modal-layout {
+    flex-direction: row;
+    gap: 32px;
   }
 }
 
+@media (max-width: 999px) {
+  .phone-modal-root {
+    padding-top: 68px; /* Clear mobile header */
+    padding-bottom: 12px;
+  }
+
+  .phone-modal-layout {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 440px;
+    padding: 0 12px;
+    box-sizing: border-box;
+  }
+}
+
+/* 5) PHONE SIZE: Portrait with ~1:1.95 ratio.
+   Height min(86svh, 600px). On 1366x642 fits fully with nav pills clear above it. */
 .phone-device-chassis {
   position: relative;
-  width: 100%;
-  background-color: var(--base-350);
+  pointer-events: auto;
+  background-color: #24201c;
   border: 3px solid var(--base-400);
   border-radius: 40px;
-  box-shadow: var(--shadow-phone-modal);
-  padding: 14px 14px 20px 14px;
+  box-shadow: 0 16px 40px rgba(12, 9, 8, 0.42), 0 2px 8px rgba(12, 9, 8, 0.25);
+  padding: 10px 10px 14px 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+  transform-origin: center center;
 }
 
-.phone-screen-content {
-  background-color: var(--base-100);
+@media (min-width: 1000px) {
+  .phone-device-chassis {
+    height: min(86svh, calc(100svh - 96px), 600px);
+    width: calc(min(86svh, calc(100svh - 96px), 600px) / 1.95);
+  }
+}
+
+@media (max-width: 999px) {
+  .phone-device-chassis {
+    height: min(56svh, calc(100svh - 175px), 480px);
+    width: calc(min(56svh, calc(100svh - 175px), 480px) / 1.95);
+  }
+}
+
+@media (max-width: 420px) {
+  .phone-device-chassis {
+    height: min(54svh, calc(100svh - 180px), 440px);
+    width: calc(min(54svh, calc(100svh - 180px), 440px) / 1.95);
+  }
+}
+
+/* Crack texture: visible always */
+.phone-crack-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 15;
+  color: rgba(250, 247, 238, 0.32);
+}
+
+.phone-device-chassis.screen-on .phone-crack-svg {
+  color: rgba(31, 42, 36, 0.16);
+}
+
+/* Top Notch */
+.phone-notch-bar {
+  height: 14px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 20;
+}
+
+.phone-speaker-slot {
+  width: 42px;
+  height: 4px;
+  background-color: var(--base-400);
+  border-radius: 999px;
+}
+
+.phone-camera-lens {
+  width: 6px;
+  height: 6px;
+  background-color: var(--base-400);
+  border-radius: 50%;
+}
+
+/* 3) PHONE DISPLAY SCREEN: Arrives OFF (dark, matching chassis) */
+.phone-screen-frame {
+  flex: 1;
+  position: relative;
   border-radius: 28px;
   overflow: hidden;
-  border: 1.5px solid var(--base-200);
-  min-height: 490px;
-  max-height: 72vh;
+  background-color: #171513;
+  border: 1.5px solid rgba(0, 0, 0, 0.38);
   display: flex;
   flex-direction: column;
 }
 
-.notes-app-screen {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+/* Light screen layer that switches ON 100ms after zoom */
+.phone-screen-light-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   background-color: var(--base-100);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
 }
 
-.notes-app-header {
-  height: 52px;
-  padding: 0 16px;
+.phone-screen-light-layer.layer-on {
+  opacity: 1;
+  animation: screenFlickerOn 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Screen flicker keyframes: 300ms fade with quick brightness dip at ~60ms */
+@keyframes screenFlickerOn {
+  0% {
+    opacity: 0;
+    filter: brightness(0.6);
+  }
+  20% {
+    opacity: 0.85;
+    filter: brightness(0.5); /* slight dip at ~60ms */
+  }
+  35% {
+    opacity: 0.72;
+    filter: brightness(0.85);
+  }
+  50% {
+    opacity: 0.95;
+    filter: brightness(1);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+/* Header & Status Bar */
+.notes-app-header,
+.mail-app-header {
+  height: 44px;
+  padding: 0 14px;
   background-color: var(--base-200);
   border-bottom: 1.5px solid var(--base-200);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
+  transition: opacity 200ms ease;
+}
+
+.header-hidden {
+  opacity: 0;
+}
+
+.header-visible {
+  opacity: 1;
 }
 
 .notes-back-btn,
-.notes-switch-btn {
-  background: none;
-  border: none;
-  color: var(--accent);
-  font-weight: 700;
-  font-size: 1.15rem;
-  cursor: pointer;
-}
-
-.notes-app-title {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--base-400);
-}
-
-.notes-scrollable-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 18px 20px 30px 20px;
-  line-height: 28px;
-}
-
-.notes-date-stamp {
-  font-size: 1.1rem;
-  color: var(--base-350);
-  text-align: center;
-  margin-bottom: 14px;
-}
-
-.field-label {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.field-value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--base-400);
-}
-
-/* Mail App Screen */
-.mail-app-screen {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--base-100);
-}
-
-.mail-app-header {
-  height: 52px;
-  padding: 0 16px;
-  background-color: var(--base-200);
-  border-bottom: 1.5px solid var(--base-200);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
+.notes-switch-btn,
 .mail-cancel-btn {
   background: none;
   border: none;
   color: var(--accent);
-  font-size: 0.95rem;
   font-weight: 700;
+  font-size: 1.05rem;
   cursor: pointer;
+  padding: 4px 6px;
+}
+
+.notes-app-title,
+.mail-app-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--base-400);
 }
 
 .mail-send-btn {
@@ -1256,38 +1364,410 @@
   color: var(--base-100);
   border: none;
   border-radius: 999px;
-  padding: 4px 14px;
-  font-size: 1.15rem;
+  padding: 3px 12px;
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
 }
 
+/* Mail Form Content */
+.mail-app-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--base-100);
+  overflow: hidden;
+}
+
+.mail-form-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px 12px 14px;
+  overflow-y: auto;
+  gap: 8px;
+}
+
 .mail-input-row {
+  display: flex;
+  align-items: center;
   border-bottom: 1px solid var(--base-200);
+  padding: 4px 0;
+  gap: 8px;
 }
 
 .mail-label {
+  width: 46px;
+  font-size: 0.88rem;
+  font-weight: 700;
   color: var(--base-350);
+}
+
+.mail-to-recipient {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mail-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--base-400);
+  outline: none;
+  font-family: inherit;
+}
+
+.mail-input-readonly {
+  font-weight: 600;
 }
 
 .copy-email-btn {
   background-color: var(--pill);
   border: 1px solid var(--base-300);
   border-radius: 6px;
-  padding: 2px 8px;
-  font-size: 0.78rem;
+  padding: 2px 7px;
+  font-size: 0.74rem;
   font-weight: 700;
   color: var(--base-400);
   cursor: pointer;
+  white-space: nowrap;
 }
 
-.phone-bottom-actions-row {
+.mail-select {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.88rem;
+  color: var(--base-400);
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.mail-body-row {
+  flex: 1;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
+  min-height: 80px;
+}
+
+.mail-textarea {
+  flex: 1;
+  border: 1px solid var(--base-200);
+  border-radius: 10px;
+  padding: 8px;
+  background-color: rgba(255, 255, 255, 0.4);
+  font-size: 0.88rem;
+  color: var(--base-400);
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.mail-textarea:focus {
+  border-color: var(--accent);
+}
+
+.mail-submit-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.mail-primary-send-btn {
+  background-color: var(--accent);
+  color: var(--base-100);
+  border: none;
+  border-radius: 999px;
+  padding: 5px 16px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(184, 80, 50, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.mail-primary-send-btn:hover {
+  transform: scale(1.03);
+}
+
+/* Form rows stagger: fade and rise 8px in 60ms stagger */
+.row-hidden {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.form-row-stagger-1 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 0ms, transform 250ms cubic-bezier(0.16, 1, 0.3, 1) 0ms;
+}
+
+.form-row-stagger-2 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 60ms, transform 250ms cubic-bezier(0.16, 1, 0.3, 1) 60ms;
+}
+
+.form-row-stagger-3 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 120ms, transform 250ms cubic-bezier(0.16, 1, 0.3, 1) 120ms;
+}
+
+.form-row-stagger-4 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 180ms, transform 250ms cubic-bezier(0.16, 1, 0.3, 1) 180ms;
+}
+
+.form-row-stagger-5 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 240ms, transform 250ms cubic-bezier(0.16, 1, 0.3, 1) 240ms;
+}
+
+/* Notes App Screen */
+.notes-app-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--base-100);
+  overflow: hidden;
+}
+
+.notes-scrollable-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px 20px 14px;
+  line-height: 24px;
+}
+
+.notes-date-stamp {
+  font-size: 1.05rem;
+  color: var(--base-350);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.notes-photo-slot {
+  display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-top: 14px;
+  margin-bottom: 12px;
+}
+
+.notes-avatar-img {
+  max-width: 140px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.notes-fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.notes-field-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-label {
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.field-value {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--base-400);
+  line-height: 1.35;
+}
+
+.notes-footer-doodle {
+  font-size: 1.15rem;
+  color: var(--base-350);
+  text-align: center;
+  margin-top: 10px;
+}
+
+.notes-row-stagger-1 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 0ms, transform 250ms ease 0ms;
+}
+
+.notes-row-stagger-2 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 60ms, transform 250ms ease 60ms;
+}
+
+.notes-row-stagger-3 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 120ms, transform 250ms ease 120ms;
+}
+
+.notes-row-stagger-4 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 180ms, transform 250ms ease 180ms;
+}
+
+/* Home Indicator Bar */
+.phone-home-indicator {
+  width: 76px;
+  height: 4px;
+  background-color: var(--base-400);
+  border-radius: 999px;
+  margin: 6px auto 2px auto;
+  flex-shrink: 0;
+}
+
+/* 4) CONTACT ACTIONS (Download Resume, LinkedIn, GitHub) */
+.phone-actions-container {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: opacity 150ms ease;
+}
+
+.phone-actions-header-label {
+  font-family: var(--font-handwriting);
+  font-size: 1.35rem;
+  color: var(--base-350);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.phone-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phone-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+@media (max-width: 999px) {
+  .phone-actions-container {
+    align-items: center;
+    width: 100%;
+  }
+
+  .phone-actions-header-label {
+    display: none;
+  }
+
+  .phone-actions-stack {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .phone-action-pill {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+}
+
+/* Action Stagger: 80ms each after form */
+.actions-hidden .phone-action-pill,
+.actions-hidden .phone-actions-header-label {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.actions-visible .phone-actions-header-label {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 0ms, transform 250ms ease 0ms;
+}
+
+.actions-visible .action-stagger-1 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 40ms, transform 250ms ease 40ms;
+}
+
+.actions-visible .action-stagger-2 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 120ms, transform 250ms ease 120ms;
+}
+
+.actions-visible .action-stagger-3 {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms ease 200ms, transform 250ms ease 200ms;
+}
+
+/* 6) CLOSING REVERSE SEQUENCES
+   - Step 1: close-content (form & actions fade out over 150ms)
+   - Step 2: close-screen (screen turns off over 150ms)
+   - Step 3: close-zoom (phone shrinks back 600ms, dim overlay fades) */
+.close-content .mail-form-body,
+.close-content .notes-app-screen,
+.close-content.phone-actions-container,
+.close-content .phone-actions-stack,
+.close-content .mail-app-header,
+.close-content .notes-app-header {
+  opacity: 0 !important;
+  transition: opacity 150ms ease !important;
+}
+
+.close-screen .phone-screen-light-layer {
+  opacity: 0 !important;
+  transition: opacity 150ms ease !important;
+}
+
+/* 7) PREFERS REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+  .phone-device-chassis {
+    transition: opacity 150ms ease !important;
+    transform: none !important;
+  }
+
+  .phone-screen-light-layer {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .form-row-stagger-1,
+  .form-row-stagger-2,
+  .form-row-stagger-3,
+  .form-row-stagger-4,
+  .form-row-stagger-5,
+  .notes-row-stagger-1,
+  .notes-row-stagger-2,
+  .notes-row-stagger-3,
+  .notes-row-stagger-4,
+  .action-stagger-1,
+  .action-stagger-2,
+  .action-stagger-3,
+  .phone-actions-header-label,
+  .mail-app-header,
+  .notes-app-header {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }
 
 /* ==========================================================================
@@ -1349,14 +1829,6 @@
     font-size: 32px;
     vertical-align: baseline;
   }
-
-  .phone-modal-backdrop {
-    padding: 0 8px 10px 8px;
-  }
-
-  .phone-modal-wrapper {
-    max-width: 100%;
-  }
 }
 
 /* Ultra small viewports (360px) */
@@ -1367,11 +1839,6 @@
 
   .hero-cycling-word {
     font-size: 28px;
-  }
-
-  .phone-bottom-actions-row {
-    flex-direction: column;
-    width: 100%;
   }
 }
 

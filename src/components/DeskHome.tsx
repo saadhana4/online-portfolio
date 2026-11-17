@@ -18,9 +18,14 @@ interface Spark {
 interface DeskHomeProps {
   currentRoute: string;
   isDriftingAwayTrigger?: boolean;
+  isPhoneOpen?: boolean;
 }
 
-export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAwayTrigger = false }) => {
+export const DeskHome: React.FC<DeskHomeProps> = ({
+  currentRoute,
+  isDriftingAwayTrigger = false,
+  isPhoneOpen = false,
+}) => {
   const isAwayRoute = currentRoute === 'work' || currentRoute === 'journey';
   const shouldBeAway = isAwayRoute || isDriftingAwayTrigger;
 
@@ -469,11 +474,22 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
     };
   }, [renderFrame, startLoop]);
 
+  const prevPhoneOpenRef = useRef<boolean>(isPhoneOpen);
+  useEffect(() => {
+    if (prevPhoneOpenRef.current && !isPhoneOpen) {
+      // Return desk to resting layout
+      targetRef.current = 0;
+      currentRef.current = 0;
+      startLoop();
+    }
+    prevPhoneOpenRef.current = isPhoneOpen;
+  }, [isPhoneOpen, startLoop]);
+
   const visibleObjects = deskObjects.filter((obj) => (isMobile ? obj.showOnMobile : true));
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Only spawn sparks in home mode on non-interactive regions
-    if (blendARef.current > 0.05) return;
+    // Only spawn sparks in home mode on non-interactive regions when phone is not open
+    if (blendARef.current > 0.05 || isPhoneOpen) return;
 
     const target = e.target as HTMLElement | null;
     if (target && target.closest('a, button, nav, input, select, textarea')) {
@@ -504,8 +520,10 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
   return (
     <section
       ref={stageRef}
-      className={`desk-surface-stage ${shouldBeAway ? 'mode-away' : 'mode-home'}`}
+      className={`desk-surface-stage ${shouldBeAway ? 'mode-away' : 'mode-home'} ${isPhoneOpen ? 'phone-is-open' : ''}`}
       aria-label="Interactive scrapbook desk workspace"
+      inert={isPhoneOpen ? true : undefined}
+      aria-hidden={isPhoneOpen ? true : undefined}
       onPointerDown={handlePointerDown}
     >
       {/* Centered Single-line Hero Message */}
@@ -514,6 +532,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
         currentWord={currentWord}
         isAway={heroIsAway}
         isFadingIn={heroIsFadingIn}
+        isPhoneOpen={isPhoneOpen}
       />
 
       {/* Scattered Desk Objects Layer: transforms only */}
@@ -521,6 +540,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
         {visibleObjects.map((obj) => {
           const widthVw = isMobile && obj.mobileWidthVw !== undefined ? obj.mobileWidthVw : obj.widthVw;
           const pos = shouldBeAway ? (AWAY_LAYOUT[obj.id] || { x: 50, y: 50, rot: 0 }) : { x: obj.x, y: obj.y, rot: obj.rotation };
+          const isRuler = obj.id === 'ruler';
 
           const style: React.CSSProperties = {
             width: `${widthVw}vw`,
@@ -534,7 +554,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
               ref={(el) => {
                 objectRefs.current[obj.id] = el;
               }}
-              className={`desk-object-cutout desk-object-${obj.id} ${obj.src.endsWith('.webp') ? 'is-photo' : ''}`}
+              className={`desk-object-cutout desk-object-${obj.id} ${obj.src.endsWith('.webp') ? 'is-photo' : ''} ${isRuler && isPhoneOpen ? 'desk-phone-hidden' : ''}`}
               style={style}
               aria-hidden="true"
             >
@@ -551,11 +571,11 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
       </div>
 
       {/* Doodle Stickman Character Layer (Controlled via W, A, S, D) */}
-      <StickMan isAway={shouldBeAway} />
+      <StickMan isAway={shouldBeAway || isPhoneOpen} />
 
       {/* Handwritten scroll hint with doodle arrow (visible only in home mode) */}
       <div
-        className={`desk-scroll-hint font-handwriting ${hasInteracted || shouldBeAway ? 'is-faded' : ''}`}
+        className={`desk-scroll-hint font-handwriting ${hasInteracted || shouldBeAway || isPhoneOpen ? 'is-faded' : ''}`}
         aria-hidden="true"
       >
         <span>scroll</span>
@@ -576,7 +596,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({ currentRoute, isDriftingAway
       </div>
 
       {/* Click Spark Burst Layer */}
-      <div className="burst-layer" aria-hidden="true">
+      <div className="burst-layer" aria-hidden="true" inert={isPhoneOpen ? true : undefined}>
         {sparks.map((spark) => (
           <svg
             key={spark.id}

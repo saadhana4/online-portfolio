@@ -22,6 +22,6 @@ export const profileData: ProfileInfo = {
   basedIn: 'Coimbatore, Tamil Nadu',
   email: 'saadhanak18@gmail.com',
   linkedin: 'https://www.linkedin.com/in/saadhana-karthikeyan-449743326',
-  github: 'https://github.com/saadhana4',
+  github: 'https://github.com/saadhana4/online-portfolio',
   resumeUrl: '/Saadhana_Karthikeyan_Resume.pdf',
 };

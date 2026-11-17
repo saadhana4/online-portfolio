@@ -99,6 +99,15 @@ body.home-route {
   background-repeat: no-repeat, repeat;
   background-size: 100% 100%, 256px 256px;
   background-position: center center, 0 0;
+  opacity: 0.9;
+  transition: opacity 500ms ease;
+}
+
+/* Desk dimming grain increase: desk looks grayer, like old paper in shade */
+html.desk-dimmed .paper-grain-overlay,
+body.desk-dimmed .paper-grain-overlay {
+  opacity: 1.35;
+  filter: contrast(108%);
 }
 
 /* Accessible Skip Link */
