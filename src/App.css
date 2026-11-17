@@ -1377,11 +1377,12 @@
 
 /* ==========================================================================
    STICKMAN DOODLE COMPONENT
-   Interactive pencil doodle walking across the scrapbook desk using WASD
+   Interactive pencil doodle walking across the bottom of the screen
+   A = left, D = right, W = tiny jump in place
    ========================================================================== */
 .stickman-container {
   position: absolute;
-  top: 0;
+  bottom: 18px;
   left: 0;
   width: 44px;
   height: 92px;
@@ -1434,24 +1435,29 @@
 
 .stickman-foot-puff {
   position: absolute;
+  bottom: 18px;
   width: 10px;
   height: 5px;
   border-radius: 50%;
   background: rgba(40, 36, 33, 0.16);
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, 50%);
   pointer-events: none;
   animation: stickmanPuffFade 0.65s forwards ease-out;
 }
 
 @keyframes stickmanPuffFade {
-  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.35; }
-  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+  0% { transform: translate(-50%, 50%) scale(0.6); opacity: 0.35; }
+  100% { transform: translate(-50%, 50%) scale(1.6); opacity: 0; }
 }
 
 @media (max-width: 700px) {
   .stickman-container {
+    bottom: 14px;
     width: 38px;
     height: 80px;
+  }
+  .stickman-foot-puff {
+    bottom: 14px;
   }
   .stickman-hint {
     font-size: 13px;

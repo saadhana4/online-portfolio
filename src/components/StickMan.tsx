@@ -17,19 +17,19 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
   const legFrontRef = useRef<SVGPathElement>(null);
   const legBackRef = useRef<SVGPathElement>(null);
 
-  // Detect mobile/touch for responsive hint text
+  // Responsive hint text
   const [hintText] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth < 700 || window.matchMedia('(pointer: coarse)').matches
-        ? 'Tap desk to walk ✎'
-        : 'WASD to walk ✎';
+        ? 'Tap bottom to walk  •  Tap to jump ✎'
+        : 'A: left  •  W: jump  •  D: right ✎';
     }
-    return 'WASD to walk ✎';
+    return 'A: left  •  W: jump  •  D: right ✎';
   });
 
-  // Movement & animation state refs
-  const posRef = useRef<{ x: number; y: number }>({ x: 42, y: 510 });
-  const targetPosRef = useRef<{ x: number; y: number } | null>(null);
+  // State refs: X position along the bottom of the screen
+  const posXRef = useRef<number>(42);
+  const targetXRef = useRef<number | null>(null);
   const facingRef = useRef<'right' | 'left'>('right');
   const keysDownRef = useRef<Set<string>>(new Set());
   const hasMovedRef = useRef<boolean>(false);
@@ -40,7 +40,7 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
   const lastPuffTimeRef = useRef<number>(0);
   const isInitializedRef = useRef<boolean>(false);
 
-  // Trigger jump animation
+  // Trigger tiny jump in place
   const triggerJump = () => {
     if (!isJumpingRef.current) {
       isJumpingRef.current = true;
@@ -52,13 +52,12 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
     }
   };
 
-  // Foot dust puff
-  const addPuff = (x: number, y: number) => {
+  // Foot dust puff at the bottom
+  const addPuff = (x: number) => {
     if (!puffsLayerRef.current) return;
     const puff = document.createElement('div');
     puff.className = 'stickman-foot-puff';
     puff.style.left = `${x}px`;
-    puff.style.top = `${y}px`;
     puffsLayerRef.current.appendChild(puff);
     setTimeout(() => {
       puff.remove();
@@ -68,13 +67,10 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
   useEffect(() => {
     lastTimeRef.current = performance.now();
 
-    const isMobile = window.innerWidth < 700 || window.matchMedia('(pointer: coarse)').matches;
-
-    // Set initial position in clear bottom-left area matching inspo photo
+    // Set initial X position in bottom-left clear area
     if (!isInitializedRef.current && typeof window !== 'undefined') {
-      const initX = isMobile ? 24 : Math.max(38, Math.min(60, window.innerWidth * 0.04));
-      const initY = Math.max(80, window.innerHeight - (isMobile ? 115 : 135));
-      posRef.current = { x: initX, y: initY };
+      const isMobile = window.innerWidth < 700 || window.matchMedia('(pointer: coarse)').matches;
+      posXRef.current = isMobile ? 24 : Math.max(36, Math.min(60, window.innerWidth * 0.04));
       isInitializedRef.current = true;
     }
 
@@ -95,24 +91,27 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
       const key = e.key.toLowerCase();
       const code = e.code;
 
-      if (['w', 'a', 's', 'd', 'arrowup', 'arrowleft', 'arrowdown', 'arrowright'].includes(key)) {
+      // W key or Up arrow or Space: tiny jump in place!
+      if (key === 'w' || key === 'arrowup' || code === 'Space' || key === ' ') {
+        triggerJump();
+        e.preventDefault();
+        return;
+      }
+
+      // A (left), D (right), S (crouch)
+      if (['a', 'd', 's', 'arrowleft', 'arrowright', 'arrowdown'].includes(key)) {
         keysDownRef.current.add(key);
         // Clear tap target when user presses keyboard
-        targetPosRef.current = null;
+        targetXRef.current = null;
 
         if (!hasMovedRef.current) {
           hasMovedRef.current = true;
           if (hintRef.current) hintRef.current.classList.add('faded');
         }
 
-        // Prevent window arrow scrolling while driving stickman
         if (key.startsWith('arrow')) {
           e.preventDefault();
         }
-      } else if (code === 'Space' || key === ' ') {
-        // Spacebar to jump
-        triggerJump();
-        e.preventDefault();
       }
     };
 
@@ -121,9 +120,8 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
       keysDownRef.current.delete(key);
     };
 
-    // Desk tap/click to walk (supports mobile & mouse navigation)
+    // Desk tap/click to walk horizontally along bottom (for mobile & mouse)
     const handleStagePointerDown = (e: PointerEvent) => {
-      // Only handle if clicking background / desk stage, not navigation links/buttons/modals
       const target = e.target as HTMLElement | null;
       if (
         target &&
@@ -137,17 +135,14 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
         return;
       }
 
-      // If clicked on stickman itself, jump!
+      // If clicked on stickman himself, trigger tiny jump in place!
       if (target && containerRef.current && containerRef.current.contains(target)) {
         triggerJump();
         return;
       }
 
-      // Tap-to-move target
-      targetPosRef.current = {
-        x: Math.max(16, Math.min(window.innerWidth - 56, e.clientX - 22)),
-        y: Math.max(30, Math.min(window.innerHeight - 95, e.clientY - 75)),
-      };
+      // Move horizontally along bottom to clicked X
+      targetXRef.current = Math.max(16, Math.min(window.innerWidth - 56, e.clientX - 22));
 
       if (!hasMovedRef.current) {
         hasMovedRef.current = true;
@@ -160,7 +155,13 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
     window.addEventListener('pointerdown', handleStagePointerDown);
 
     // Update SVG joints & paths
-    const applyPose = (moving: boolean, phase: number, jumping: boolean, now: number) => {
+    const applyPose = (
+      moving: boolean,
+      crouching: boolean,
+      phase: number,
+      jumping: boolean,
+      now: number
+    ) => {
       const head = headGroupRef.current;
       const spine = spineRef.current;
       const armF = armFrontRef.current;
@@ -171,7 +172,7 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
       if (!head || !spine || !armF || !armB || !legF || !legB) return;
 
       if (jumping) {
-        // Cheerful jumping pose \o/
+        // Cheerful tiny jump pose \o/
         head.setAttribute('transform', 'translate(0, -2) rotate(2 16 14)');
         spine.setAttribute('y1', '19');
         spine.setAttribute('y2', '42');
@@ -180,9 +181,20 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
         armF.setAttribute('d', 'M 16 23 Q 10 12 6 5');
         armB.setAttribute('d', 'M 16 23 Q 22 12 26 5');
 
-        // Legs bent slightly up in jump
-        legF.setAttribute('d', 'M 16 42 L 12 58 L 9 72');
-        legB.setAttribute('d', 'M 16 42 L 20 58 L 23 72');
+        // Legs bent up slightly during jump
+        legF.setAttribute('d', 'M 16 42 L 12 56 L 9 70');
+        legB.setAttribute('d', 'M 16 42 L 20 56 L 23 70');
+      } else if (crouching) {
+        // Tiny crouch/squat in place when holding S
+        head.setAttribute('transform', 'translate(0, 6) rotate(-2 16 14)');
+        spine.setAttribute('y1', '27.6');
+        spine.setAttribute('y2', '48');
+
+        armF.setAttribute('d', 'M 16 31 Q 12 40 9 49');
+        armB.setAttribute('d', 'M 16 31 Q 20 40 23 49');
+
+        legF.setAttribute('d', 'M 16 48 L 11 65 L 10 80');
+        legB.setAttribute('d', 'M 16 48 L 21 65 L 22 80');
       } else if (!moving) {
         // Idle pose: authentic graphite doodle matching inspo photo
         const breathe = Math.sin(now * 0.003) * 1.0;
@@ -264,78 +276,66 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
       lastTimeRef.current = now;
 
       let dx = 0;
-      let dy = 0;
-
       const keys = keysDownRef.current;
+
+      // Only horizontal walking: A (left), D (right)
       if (keys.has('a') || keys.has('arrowleft')) dx -= 1;
       if (keys.has('d') || keys.has('arrowright')) dx += 1;
-      if (keys.has('w') || keys.has('arrowup')) dy -= 1;
-      if (keys.has('s') || keys.has('arrowdown')) dy += 1;
 
-      // Tap-to-walk steering if no keyboard keys are held
-      if (dx === 0 && dy === 0 && targetPosRef.current) {
-        const toX = targetPosRef.current.x - posRef.current.x;
-        const toY = targetPosRef.current.y - posRef.current.y;
-        const dist = Math.hypot(toX, toY);
-
-        if (dist > 8) {
-          dx = toX / dist;
-          dy = toY / dist;
+      // Tap-to-walk horizontally if no keys held
+      if (dx === 0 && targetXRef.current !== null) {
+        const toX = targetXRef.current - posXRef.current;
+        if (Math.abs(toX) > 6) {
+          dx = Math.sign(toX);
         } else {
-          targetPosRef.current = null;
+          targetXRef.current = null;
         }
       }
 
-      const isMoving = dx !== 0 || dy !== 0;
+      const isCrouching = !isJumpingRef.current && (keys.has('s') || keys.has('arrowdown'));
+      const isMoving = dx !== 0 && !isCrouching;
 
-      if (dx < -0.05) facingRef.current = 'left';
-      else if (dx > 0.05) facingRef.current = 'right';
+      if (dx < 0) facingRef.current = 'left';
+      else if (dx > 0) facingRef.current = 'right';
 
       if (isMoving) {
-        const mag = Math.hypot(dx, dy);
-        const normDx = dx / mag;
-        const normDy = dy / mag;
+        const speed = 210; // pixels per second
+        posXRef.current += dx * speed * dt;
 
-        const speed = 200; // pixels per second
-        posRef.current.x += normDx * speed * dt;
-        posRef.current.y += normDy * speed * dt;
-
-        // Viewport clamping
+        // Clamped horizontally to bottom of screen
         const padX = 16;
-        const padY = 24;
-        posRef.current.x = Math.max(padX, Math.min(window.innerWidth - padX - 44, posRef.current.x));
-        posRef.current.y = Math.max(padY, Math.min(window.innerHeight - padY - 90, posRef.current.y));
+        posXRef.current = Math.max(padX, Math.min(window.innerWidth - padX - 44, posXRef.current));
 
         walkPhaseRef.current += dt * 14;
 
-        // Dust puff every ~220ms when in motion
+        // Dust puff every ~220ms when in motion along bottom
         if (now - lastPuffTimeRef.current > 220) {
-          addPuff(posRef.current.x + 22, posRef.current.y + 86);
+          addPuff(posXRef.current + 22);
           lastPuffTimeRef.current = now;
         }
       }
 
-      // Jump physics
+      // Tiny jump in place physics (W key or click)
       let jumpY = 0;
       if (isJumpingRef.current) {
-        jumpProgressRef.current += dt * 4.0;
+        jumpProgressRef.current += dt * 4.4; // quick, crisp hop (~0.23s)
         if (jumpProgressRef.current >= 1.0) {
           isJumpingRef.current = false;
           jumpProgressRef.current = 0;
-          addPuff(posRef.current.x + 22, posRef.current.y + 86);
+          addPuff(posXRef.current + 22);
         } else {
-          jumpY = -Math.sin(jumpProgressRef.current * Math.PI) * 32;
+          // Tiny jump: 18px hop in place
+          jumpY = -Math.sin(jumpProgressRef.current * Math.PI) * 18;
         }
       }
 
       // Update limbs SVG
-      applyPose(isMoving, walkPhaseRef.current, isJumpingRef.current, now);
+      applyPose(isMoving, isCrouching, walkPhaseRef.current, isJumpingRef.current, now);
 
-      // Apply transform to container
+      // Apply transform to container (stays strictly at bottom of screen)
       if (containerRef.current) {
         const scaleX = facingRef.current === 'left' ? -1 : 1;
-        const finalY = posRef.current.y + jumpY;
-        containerRef.current.style.transform = `translate3d(${posRef.current.x}px, ${finalY}px, 0) scaleX(${scaleX})`;
+        containerRef.current.style.transform = `translate3d(${posXRef.current}px, ${jumpY}px, 0) scaleX(${scaleX})`;
       }
 
       rAFId = requestAnimationFrame(tick);
@@ -353,14 +353,14 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
 
   return (
     <>
-      {/* Footprint dust puffs layer */}
+      {/* Footprint dust puffs layer along bottom baseline */}
       <div ref={puffsLayerRef} className="stickman-puffs-layer" aria-hidden="true" />
 
-      {/* Main Stickman Character */}
+      {/* Main Stickman Character locked to bottom of screen */}
       <div
         ref={containerRef}
         className={`stickman-container ${isAway ? 'is-away' : ''}`}
-        aria-label="Interactive doodle stickman. Use W, A, S, D keys or click to move."
+        aria-label="Interactive doodle stickman at bottom of screen. Use A to move left, D to move right, and W to jump in place."
         role="img"
         onClick={triggerJump}
       >
