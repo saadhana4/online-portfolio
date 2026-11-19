@@ -31,6 +31,7 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
   const fromInputRef = useRef<HTMLInputElement>(null);
   const isClosingRef = useRef<boolean>(false);
   const activeAnimationRef = useRef<Animation | null>(null);
+  const hasMountedZoomRef = useRef<boolean>(false);
 
   const [isReducedMotion] = useState<boolean>(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
@@ -104,8 +105,11 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
     }
   }, []);
 
-  // Run zoom transition using Web Animations API
+  // Run zoom transition using Web Animations API (once upon mounting)
   useLayoutEffect(() => {
+    if (hasMountedZoomRef.current) return;
+    hasMountedZoomRef.current = true;
+
     const prefersReduced =
       typeof window !== 'undefined' &&
       window.matchMedia &&
@@ -255,7 +259,17 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
         activeAnimationRef.current.cancel();
       }
     };
-  }, [isDirectLoad, dims, view]);
+  }, [isDirectLoad, dims]);
+
+  // Focus fromInput when switching to contact view while already open
+  useEffect(() => {
+    if (isZoomed && view === 'contact') {
+      const timer = setTimeout(() => {
+        fromInputRef.current?.focus({ preventScroll: true });
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [view, isZoomed]);
 
   // Clean up body dimming class on unmount
   useEffect(() => {

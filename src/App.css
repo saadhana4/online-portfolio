@@ -1615,6 +1615,18 @@
   flex-direction: column;
   background-color: var(--base-100);
   overflow: hidden;
+  animation: appScreenFadeIn 180ms ease forwards;
+}
+
+@keyframes appScreenFadeIn {
+  from {
+    opacity: 0.6;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mail-form-body {
@@ -1792,6 +1804,7 @@
   flex-direction: column;
   background-color: var(--base-100);
   overflow: hidden;
+  animation: appScreenFadeIn 180ms ease forwards;
 }
 
 .notes-scrollable-body {
@@ -2024,7 +2037,9 @@
     transition: opacity 150ms ease !important;
   }
 
-  .phone-screen-light-layer {
+  .phone-screen-light-layer,
+  .mail-app-screen,
+  .notes-app-screen {
     animation: none !important;
     opacity: 1 !important;
   }
