@@ -28,8 +28,8 @@ export const projects: Project[] = [
     summary:
       'Maps waste hotspots and supports collection planning. Municipal admin dashboard showing hotspots, severity, waste categories, vehicles and zones. FastAPI with PostgreSQL/PostGIS.',
     tags: ['FastAPI', 'PostgreSQL', 'PostGIS', 'Geospatial AI', 'Municipal Dashboard'],
-    image: '/projects/wastewise.svg',
-    alt: 'WasteWise geospatial AI hotspot mapping dashboard card',
+    image: '/projects/wastewise.png',
+    alt: 'WasteWise geospatial intelligence municipal dashboard with interactive network hub and hotspot analytics',
     highlight: 'Geospatial Hotspots & Fleet Planning',
   },
   {
@@ -61,8 +61,8 @@ export const projects: Project[] = [
     summary:
       'Cinematic scroll-driven site in Next.js and React with frame-sequence scroll animation and a preloader.',
     tags: ['Next.js', 'React', 'Frame Sequences', 'Scroll-Driven UI', 'Web Animation'],
-    image: '/projects/aetheria.svg',
-    alt: 'Aetheria cinematic film sequence and lifestyle experience card',
+    image: '/projects/aetheria.png',
+    alt: 'Aetheria interactive luxury beauty and lifestyle website interface',
     highlight: 'Frame-Sequence Scroll & Interactive Preloader',
   },
   {
