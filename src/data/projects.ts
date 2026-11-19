@@ -6,8 +6,6 @@ export interface Project {
   tags: string[];
   image: string;
   alt: string;
-  githubUrl: string;
-  liveUrl?: string;
   highlight?: string;
 }
 
@@ -21,8 +19,6 @@ export const projects: Project[] = [
     tags: ['FastAPI', 'Python', 'Elderly Care', 'Adherence Tracking', 'Email Reminders'],
     image: '/projects/carenest.svg',
     alt: 'CareNest medication schedule and care management platform card',
-    githubUrl: 'https://github.com/saadhana4/elderly-care-platform',
-    liveUrl: 'https://elderly-care-platform-yhjk.onrender.com',
     highlight: 'PromptWars x Catalyst Hackathon • 96.64 AI Score',
   },
   {
@@ -34,8 +30,6 @@ export const projects: Project[] = [
     tags: ['FastAPI', 'PostgreSQL', 'PostGIS', 'Geospatial AI', 'Municipal Dashboard'],
     image: '/projects/wastewise.svg',
     alt: 'WasteWise geospatial AI hotspot mapping dashboard card',
-    // TODO: Update with exact repo URL when published
-    githubUrl: 'https://github.com/saadhana4',
     highlight: 'Geospatial Hotspots & Fleet Planning',
   },
   {
@@ -47,8 +41,6 @@ export const projects: Project[] = [
     tags: ['MediaPipe', 'OpenCV', 'Computer Vision', 'Python', 'Gesture Recognition'],
     image: '/projects/calculator.svg',
     alt: 'AI Virtual Calculator with MediaPipe hand tracking landmark visual',
-    // TODO: Update with exact repo URL when published
-    githubUrl: 'https://github.com/saadhana4',
     highlight: 'Touchless Air-Gesture Math & Vision',
   },
   {
@@ -60,8 +52,6 @@ export const projects: Project[] = [
     tags: ['Flask', 'Biometrics', 'Twilio SMS', 'ICD-11 TM2', 'NAMASTE', 'Audit Logging'],
     image: '/projects/casettaking.svg',
     alt: 'Digital Case-Taking and Emergency Health ID System with consent workflow',
-    // TODO: Update with exact repo URL when published
-    githubUrl: 'https://github.com/saadhana4',
     highlight: 'Biometric Access & Ayush Intake Standards',
   },
   {
@@ -73,8 +63,6 @@ export const projects: Project[] = [
     tags: ['Next.js', 'React', 'Frame Sequences', 'Scroll-Driven UI', 'Web Animation'],
     image: '/projects/aetheria.svg',
     alt: 'Aetheria cinematic film sequence and lifestyle experience card',
-    // TODO: Update with exact repo URL when published
-    githubUrl: 'https://github.com/saadhana4',
     highlight: 'Frame-Sequence Scroll & Interactive Preloader',
   },
   {
@@ -86,8 +74,6 @@ export const projects: Project[] = [
     tags: ['Power BI', 'DAX', 'Data Preparation', 'Business Analytics', 'Data Viz'],
     image: '/projects/powerbi.svg',
     alt: 'Power BI business sales dashboard with monthly trajectory and KPI metrics',
-    // TODO: Update with exact repo URL when published
-    githubUrl: 'https://github.com/saadhana4',
     highlight: 'Interactive KPI Modeling & Visuals',
   },
 ];
