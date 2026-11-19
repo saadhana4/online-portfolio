@@ -16,8 +16,15 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
   const legFrontRef = useRef<SVGPathElement>(null);
   const legBackRef = useRef<SVGPathElement>(null);
 
-  // Responsive hint text (purely keyboard WASD instructions)
-  const [hintText] = useState<string>('use WASD');
+  // Check if primary pointer is touch device (hover: none)
+  const [isTouchDevice, setIsTouchDevice] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(hover: none)').matches;
+    }
+    return false;
+  });
+
+  const [hasTouched, setHasTouched] = useState<boolean>(false);
 
   // State refs: X position strictly along the bottom of the screen
   const posXRef = useRef<number>(32);
@@ -30,7 +37,7 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
   const lastTimeRef = useRef<number>(0);
   const isInitializedRef = useRef<boolean>(false);
 
-  // Trigger small jump in place
+  // Trigger small jump in place (desktop WASD)
   const triggerJump = () => {
     if (!isJumpingRef.current) {
       isJumpingRef.current = true;
@@ -43,6 +50,37 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
   };
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const media = window.matchMedia('(hover: none)');
+      const updateHover = (e: MediaQueryListEvent) => {
+        setIsTouchDevice(e.matches);
+      };
+      if (media.addEventListener) {
+        media.addEventListener('change', updateHover);
+        return () => media.removeEventListener('change', updateHover);
+      }
+    }
+  }, []);
+
+  // First touch interaction fades out speech bubble on touch devices
+  useEffect(() => {
+    if (!isTouchDevice) return;
+
+    const handleFirstTouch = () => {
+      setHasTouched(true);
+      if (hintRef.current) {
+        hintRef.current.classList.add('faded');
+      }
+      window.removeEventListener('touchstart', handleFirstTouch);
+    };
+
+    window.addEventListener('touchstart', handleFirstTouch, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', handleFirstTouch);
+    };
+  }, [isTouchDevice]);
+
+  useEffect(() => {
     lastTimeRef.current = performance.now();
 
     // Set initial X position in bottom-left clear area
@@ -52,7 +90,7 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
       isInitializedRef.current = true;
     }
 
-    // Keyboard listeners (capture phase to isolate from any stage/desk scrolling)
+    // Keyboard listeners only for non-touch devices (hover: hover)
     const handleKeyDown = (e: KeyboardEvent) => {
       // Guard: do not capture keys while user is typing in form fields or modals
       const target = e.target as HTMLElement | null;
@@ -113,9 +151,10 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
       }
     };
 
-    // Attach listeners on window with capture: true
-    window.addEventListener('keydown', handleKeyDown, { capture: true });
-    window.addEventListener('keyup', handleKeyUp, { capture: true });
+    if (!isTouchDevice) {
+      window.addEventListener('keydown', handleKeyDown, { capture: true });
+      window.addEventListener('keyup', handleKeyUp, { capture: true });
+    }
 
     // Update SVG joints & paths
     const applyPose = (
@@ -229,9 +268,11 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
       let dx = 0;
       const keys = keysDownRef.current;
 
-      // Only horizontal walking via A (left) and D (right) keys
-      if (keys.has('a')) dx -= 1;
-      if (keys.has('d')) dx += 1;
+      // Only horizontal walking via A (left) and D (right) keys on desktop
+      if (!isTouchDevice) {
+        if (keys.has('a')) dx -= 1;
+        if (keys.has('d')) dx += 1;
+      }
 
       const isMoving = dx !== 0;
 
@@ -277,23 +318,49 @@ export const StickMan: React.FC<StickManProps> = ({ isAway = false }) => {
     rAFId = requestAnimationFrame(tick);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown, { capture: true });
-      window.removeEventListener('keyup', handleKeyUp, { capture: true });
+      if (!isTouchDevice) {
+        window.removeEventListener('keydown', handleKeyDown, { capture: true });
+        window.removeEventListener('keyup', handleKeyUp, { capture: true });
+      }
       cancelAnimationFrame(rAFId);
     };
-  }, []);
+  }, [isTouchDevice]);
 
   return (
     <div
       ref={containerRef}
       className={`stickman-container ${isAway ? 'is-away' : ''}`}
-      aria-label="Doodle stickman at bottom of screen. Use A to move left, D to move right, and W to jump."
+      aria-label="Doodle stickman at bottom of screen."
       role="img"
     >
-      {/* Handwritten hint badge */}
-      <div ref={hintRef} className="stickman-hint" aria-hidden="true">
-        {hintText}
-      </div>
+      {/* Hint badge: on touch devices (hover: none), small hand-drawn speech bubble saying 'swipe'; on desktop, 'use WASD' */}
+      {isTouchDevice ? (
+        <div
+          ref={hintRef}
+          className={`stickman-speech-bubble font-handwriting ${hasTouched ? 'faded' : ''}`}
+          aria-hidden="true"
+        >
+          <span className="speech-bubble-text">swipe</span>
+          <svg
+            className="speech-bubble-tail"
+            width="10"
+            height="7"
+            viewBox="0 0 10 7"
+            fill="none"
+            stroke="#282421"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M 1 0 L 5 6 L 9 0" fill="var(--base-100)" />
+          </svg>
+        </div>
+      ) : (
+        <div ref={hintRef} className="stickman-hint" aria-hidden="true">
+          use WASD
+        </div>
+      )}
 
       {/* Scalable Vector Doodle Stick Figure */}
       <svg

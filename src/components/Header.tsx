@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { preloadLargePhoneImage } from '../utils/preloadImage';
 
 interface HeaderProps {
@@ -10,64 +10,154 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate, onBeginDrift }) => {
   const [isHitting, setIsHitting] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [isClosing, setIsClosing] = useState<boolean>(false);
 
-  const menuRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const closeTimeoutRef = useRef<number | null>(null);
+
   const isInnerPage = currentRoute !== '' && currentRoute !== '/' && currentRoute !== '#/';
 
-  // Handle Esc key to close mobile menu
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isMenuOpen) {
+  const checkReducedMotion = () => {
+    return (
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+  };
+
+  // Close panel helper with optional callback after 250ms (or 0ms if reduced motion)
+  const closePanel = useCallback(
+    (callback?: () => void) => {
+      const isReduced = checkReducedMotion();
+
+      if (isReduced) {
         setIsMenuOpen(false);
+        setIsClosing(false);
+        callback?.();
+        toggleButtonRef.current?.focus();
+        return;
+      }
+
+      setIsClosing(true);
+      if (closeTimeoutRef.current) window.clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = window.setTimeout(() => {
+        setIsMenuOpen(false);
+        setIsClosing(false);
+        callback?.();
+        toggleButtonRef.current?.focus();
+      }, 250);
+    },
+    []
+  );
+
+  const handleToggle = () => {
+    if (isMenuOpen) {
+      closePanel();
+    } else {
+      setIsMenuOpen(true);
+      setIsClosing(false);
+    }
+  };
+
+  // Focus management & keyboard trapping while side panel is open
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    // Focus first link on open
+    const focusTimer = window.setTimeout(() => {
+      if (isMenuOpen && !isClosing) {
+        const firstLink = panelRef.current?.querySelector<HTMLElement>('a');
+        firstLink?.focus();
+      }
+    }, 60);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closePanel();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const panel = panelRef.current;
+        const toggle = toggleButtonRef.current;
+        if (!panel || !toggle) return;
+
+        const links = Array.from(
+          panel.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')
+        );
+        const focusable = [toggle, ...links];
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMenuOpen]);
-
-  // Close menu on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsMenuOpen(false);
-      }
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
     };
+  }, [isMenuOpen, isClosing, closePanel]);
+
+  // Set page behind inert & aria-hidden while side panel is open
+  useEffect(() => {
+    const mainContent = document.getElementById('main-content');
+    const headerBrand = document.querySelector('.header-brand');
 
     if (isMenuOpen) {
-      document.addEventListener('pointerdown', handleClickOutside);
+      mainContent?.setAttribute('inert', '');
+      headerBrand?.setAttribute('inert', '');
+      mainContent?.setAttribute('aria-hidden', 'true');
+      headerBrand?.setAttribute('aria-hidden', 'true');
+    } else {
+      mainContent?.removeAttribute('inert');
+      headerBrand?.removeAttribute('inert');
+      mainContent?.removeAttribute('aria-hidden');
+      headerBrand?.removeAttribute('aria-hidden');
     }
-    return () => document.removeEventListener('pointerdown', handleClickOutside);
+
+    return () => {
+      mainContent?.removeAttribute('inert');
+      headerBrand?.removeAttribute('inert');
+      mainContent?.removeAttribute('aria-hidden');
+      headerBrand?.removeAttribute('aria-hidden');
+    };
   }, [isMenuOpen]);
 
-  const handleWorkClick = (e: React.MouseEvent<HTMLAnchorElement> | React.KeyboardEvent<HTMLAnchorElement>) => {
+  // Desktop link handlers
+  const handleWorkClick = (
+    e: React.MouseEvent<HTMLAnchorElement> | React.KeyboardEvent<HTMLAnchorElement>
+  ) => {
     e.preventDefault();
     if (isHitting) return;
 
-    setIsMenuOpen(false);
-
-    const prefersReducedMotion =
-      typeof window !== 'undefined' && window.matchMedia
-        ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        : false;
-
-    if (prefersReducedMotion) {
+    if (checkReducedMotion()) {
       onNavigate('work');
       return;
     }
 
-    // 3) Work click sequence: hammer winds up and strikes.
-    // At impact (~280ms) begin drift; at ~330ms set route to #/work.
     setIsHitting(true);
-
     setTimeout(() => {
       onBeginDrift?.('away');
     }, 280);
-
     setTimeout(() => {
       onNavigate('work');
     }, 330);
-
     setTimeout(() => {
       setIsHitting(false);
     }, 750);
@@ -75,25 +165,51 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate, onBegi
 
   const handleJourneyClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    setIsMenuOpen(false);
     onBeginDrift?.('away');
     onNavigate('journey');
   };
 
   const handleBackClick = () => {
-    setIsMenuOpen(false);
     onBeginDrift?.('home');
     onNavigate('');
   };
 
   const handleLinkClick = (route: string) => {
-    setIsMenuOpen(false);
     onNavigate(route);
+  };
+
+  // Mobile menu item selections: closes panel first (250ms), then executes action
+  const handlePanelItemClick = (e: React.MouseEvent<HTMLAnchorElement>, route: string) => {
+    e.preventDefault();
+    closePanel(() => {
+      if (route === '') {
+        handleBackClick();
+      } else if (route === 'work') {
+        if (checkReducedMotion()) {
+          onNavigate('work');
+          return;
+        }
+        setIsHitting(true);
+        setTimeout(() => {
+          onBeginDrift?.('away');
+        }, 280);
+        setTimeout(() => {
+          onNavigate('work');
+        }, 330);
+        setTimeout(() => {
+          setIsHitting(false);
+        }, 750);
+      } else if (route === 'journey') {
+        handleJourneyClick(e);
+      } else {
+        handleLinkClick(route);
+      }
+    });
   };
 
   return (
     <header className="site-header" role="banner">
-      {/* Top-Left Signature: Caveat, left: 27px, top: 24px, about 34px tall */}
+      {/* Top-Left Signature: Caveat */}
       <div className="header-brand">
         <a
           href="#/"
@@ -109,11 +225,11 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate, onBegi
       </div>
 
       {/* Top-Right Navigation */}
-      <nav className="header-nav" aria-label="Main Navigation" ref={menuRef}>
+      <div className="header-nav">
         {/* Mobile / Tablet Collapsible Menu (< 1000px) */}
         <div className="mobile-nav-container">
-          {/* Back pill on mobile: shown outside the menu next to Menu pill */}
-          {isInnerPage && (
+          {/* Back pill on mobile: shown outside next to Menu pill when menu is closed on inner routes */}
+          {!isMenuOpen && isInnerPage && (
             <div className="back-pill-wrapper mobile-back-wrapper">
               <a
                 href="#/"
@@ -144,12 +260,15 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate, onBegi
             </div>
           )}
 
+          {/* Menu / Close Toggle Pill (stays in exact same spot at top right, morphs text and icon) */}
           <button
+            ref={toggleButtonRef}
             type="button"
-            className="pill-btn nav-pill menu-toggle-btn"
+            className={`pill-btn nav-pill menu-toggle-btn ${isMenuOpen ? 'is-close-active' : ''}`}
             aria-expanded={isMenuOpen}
-            aria-controls="mobile-nav-menu"
-            onClick={() => setIsMenuOpen((prev) => !prev)}
+            aria-controls="mobile-nav-panel"
+            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+            onClick={handleToggle}
           >
             <svg
               width="18"
@@ -174,85 +293,178 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate, onBegi
                 </>
               )}
             </svg>
-            <span>Menu</span>
+            <span>{isMenuOpen ? 'Close' : 'Menu'}</span>
           </button>
-
-          {/* Vertical Drawer for under 1000px */}
-          {isMenuOpen && (
-            <div id="mobile-nav-menu" className="mobile-menu-drawer" role="menu">
-              <a
-                href="#/work"
-                role="menuitem"
-                className={`pill-btn nav-pill work-pill ${currentRoute === 'work' ? 'active' : ''} ${isHitting ? 'is-hitting' : ''}`}
-                onClick={handleWorkClick}
-                aria-label="Work"
-              >
-                <svg className="hammer-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="9" y1="13" x2="4" y2="21" stroke="currentColor" strokeWidth="2.6" />
-                  <line x1="6" y1="17.5" x2="7.5" y2="18.5" stroke="var(--accent)" strokeWidth="1.8" />
-                  <path d="M8 6 L14 12 L18 8 L12 2 Z" fill="var(--accent)" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-                  <line x1="17" y1="7" x2="21" y2="11" stroke="currentColor" strokeWidth="3" />
-                </svg>
-                <span>Work</span>
-              </a>
-
-              <a
-                href="#/journey"
-                role="menuitem"
-                className={`pill-btn nav-pill ${currentRoute === 'journey' ? 'active' : ''}`}
-                onClick={handleJourneyClick}
-              >
-                <svg className="compass-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="12" r="10" />
-                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" opacity="0.25" />
-                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-                </svg>
-                <span>Journey</span>
-              </a>
-
-              <a
-                href="#/about"
-                role="menuitem"
-                className={`pill-btn nav-pill ${currentRoute === 'about' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('about');
-                }}
-                onMouseEnter={preloadLargePhoneImage}
-                onFocus={preloadLargePhoneImage}
-              >
-                <svg className="note-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                </svg>
-                <span>About</span>
-              </a>
-
-              <a
-                href="#/contact"
-                role="menuitem"
-                className={`pill-btn nav-pill ${currentRoute === 'contact' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick('contact');
-                }}
-                onMouseEnter={preloadLargePhoneImage}
-                onFocus={preloadLargePhoneImage}
-              >
-                <svg className="mail-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-                <span>Contact</span>
-              </a>
-            </div>
-          )}
         </div>
 
+        {/* Mobile Light Scrim (rgba(60,50,35,0.18), closes menu on tap) */}
+        <div
+          className={`mobile-panel-scrim ${isMenuOpen && !isClosing ? 'is-open' : ''}`}
+          onClick={() => closePanel()}
+          aria-hidden="true"
+        />
+
+        {/* Mobile Side Panel: <nav aria-label="Main"> */}
+        <nav
+          ref={panelRef}
+          id="mobile-nav-panel"
+          className={`mobile-side-panel ${isMenuOpen ? 'is-open' : ''} ${isClosing ? 'is-closing' : ''}`}
+          aria-label="Main"
+          aria-hidden={!isMenuOpen}
+        >
+          <div className="panel-pills-column">
+            {/* 1. Back pill (only when not on home route) */}
+            {isInnerPage && (
+              <a
+                href="#/"
+                className="pill-btn nav-pill panel-nav-pill"
+                onClick={(e) => handlePanelItemClick(e, '')}
+                aria-label="Back to home"
+              >
+                <svg
+                  className="panel-icon-svg"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M9 14 L4 9 L9 4" />
+                  <path d="M5 9 C11 8, 17 9, 18 13 C19 16, 17 20, 13 20 C10 20, 8 18, 8 16" />
+                </svg>
+                <span>Back</span>
+              </a>
+            )}
+
+            {/* 2. Work pill */}
+            <a
+              href="#/work"
+              className={`pill-btn nav-pill panel-nav-pill ${currentRoute === 'work' ? 'active' : ''}`}
+              onClick={(e) => handlePanelItemClick(e, 'work')}
+              aria-current={currentRoute === 'work' ? 'page' : undefined}
+            >
+              <svg
+                className="panel-icon-svg"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="9" y1="13" x2="4" y2="21" stroke="currentColor" strokeWidth="2.6" />
+                <line x1="6" y1="17.5" x2="7.5" y2="18.5" stroke="var(--accent)" strokeWidth="1.8" />
+                <path
+                  d="M8 6 L14 12 L18 8 L12 2 Z"
+                  fill="var(--accent)"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+                <line x1="17" y1="7" x2="21" y2="11" stroke="currentColor" strokeWidth="3" />
+              </svg>
+              <span>Work</span>
+            </a>
+
+            {/* 3. Journey pill */}
+            <a
+              href="#/journey"
+              className={`pill-btn nav-pill panel-nav-pill ${currentRoute === 'journey' ? 'active' : ''}`}
+              onClick={(e) => handlePanelItemClick(e, 'journey')}
+              aria-current={currentRoute === 'journey' ? 'page' : undefined}
+            >
+              <svg
+                className="panel-icon-svg"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polygon
+                  points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"
+                  fill="currentColor"
+                  opacity="0.25"
+                />
+                <polygon
+                  points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"
+                />
+              </svg>
+              <span>Journey</span>
+            </a>
+
+            {/* 4. About pill */}
+            <a
+              href="#/about"
+              className={`pill-btn nav-pill panel-nav-pill ${currentRoute === 'about' ? 'active' : ''}`}
+              onClick={(e) => handlePanelItemClick(e, 'about')}
+              onMouseEnter={preloadLargePhoneImage}
+              onFocus={preloadLargePhoneImage}
+              aria-current={currentRoute === 'about' ? 'page' : undefined}
+            >
+              <svg
+                className="panel-icon-svg"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+              <span>About</span>
+            </a>
+
+            {/* 5. Contact pill */}
+            <a
+              href="#/contact"
+              className={`pill-btn nav-pill panel-nav-pill ${currentRoute === 'contact' ? 'active' : ''}`}
+              onClick={(e) => handlePanelItemClick(e, 'contact')}
+              onMouseEnter={preloadLargePhoneImage}
+              onFocus={preloadLargePhoneImage}
+              aria-current={currentRoute === 'contact' ? 'page' : undefined}
+            >
+              <svg
+                className="panel-icon-svg"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+              <span>Contact</span>
+            </a>
+          </div>
+        </nav>
+
         {/* Desktop Navigation: exact 8px gap, top: 26px, right: 28px */}
-        <div className="nav-pills-row nav-pills-desktop">
+        <nav className="nav-pills-row nav-pills-desktop" aria-label="Desktop Main Navigation">
           {/* 5) BACK PILL: FIRST pill in nav, left of Work */}
           {isInnerPage && (
             <div className="back-pill-wrapper">
@@ -389,8 +601,8 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, onNavigate, onBegi
             </svg>
             <span>Contact</span>
           </a>
-        </div>
-      </nav>
+        </nav>
+      </div>
     </header>
   );
 };

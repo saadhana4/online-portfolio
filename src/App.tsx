@@ -90,7 +90,7 @@ export const App: React.FC = () => {
           setTimeout(() => {
             setIsTransitioningRoute(false);
           }, 900);
-        } else if (route === '' && (prevRoute === 'work' || prevRoute === 'journey')) {
+        } else if (route === '') {
           setIsDriftingAway(false);
         }
       } else {

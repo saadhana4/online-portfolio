@@ -4,6 +4,7 @@ import {
   getHeroYPercent,
   getBlendedObjectTransform,
   AWAY_LAYOUT,
+  AWAY_LAYOUT_MOBILE,
 } from '../data/driftKeyframes';
 import { HeroLine, type HeroWord } from './HeroLine';
 import { StickMan } from './StickMan';
@@ -553,7 +554,13 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
       <div className="desk-objects-stage-layer" aria-hidden="true">
         {visibleObjects.map((obj) => {
           const widthVw = isMobile && obj.mobileWidthVw !== undefined ? obj.mobileWidthVw : obj.widthVw;
-          const pos = shouldBeAway ? (AWAY_LAYOUT[obj.id] || { x: 50, y: 50, rot: 0 }) : { x: obj.x, y: obj.y, rot: obj.rotation };
+          const pos = shouldBeAway
+            ? ((isMobile ? AWAY_LAYOUT_MOBILE[obj.id] : null) || AWAY_LAYOUT[obj.id] || { x: 50, y: 50, rot: 0 })
+            : {
+                x: isMobile && obj.mobileX !== undefined ? obj.mobileX : obj.x,
+                y: isMobile && obj.mobileY !== undefined ? obj.mobileY : obj.y,
+                rot: isMobile && obj.mobileRotation !== undefined ? obj.mobileRotation : obj.rotation,
+              };
           const isRuler = obj.id === 'ruler';
 
           const style: React.CSSProperties = {
@@ -576,6 +583,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
                 src={obj.src}
                 alt=""
                 loading="lazy"
+                decoding="async"
                 className={`desk-cutout-img ${obj.src.endsWith('.webp') ? 'is-photo' : ''}`}
                 draggable={false}
               />

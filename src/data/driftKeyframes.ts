@@ -37,9 +37,12 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p65: { x: 20, y: 12, rot: 30 },
     p85: { x: 20, y: -2, rot: -36 },
     p1: { x: 11, y: 20, rot: -6 },
-    mobileP0: { x: 20, y: 21, rot: -6 },
-    mobileP65: { x: 22, y: 18, rot: 30 },
-    mobileP1: { x: 20, y: 21, rot: -6 },
+    mobileP0: { x: 21, y: 14, rot: -8 },
+    mobileP28: { x: 48, y: 56, rot: 25 },
+    mobileP45: { x: 49, y: 57, rot: -12 },
+    mobileP65: { x: 22, y: 16, rot: 28 },
+    mobileP85: { x: 21, y: -4, rot: -30 },
+    mobileP1: { x: 21, y: 14, rot: -8 },
   },
   pencil: {
     id: 'pencil',
@@ -60,6 +63,12 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p65: { x: 90, y: 20, rot: 25 },
     p85: { x: 5, y: -2, rot: -34 },
     p1: { x: 36, y: 25, rot: -4 },
+    mobileP0: { x: 11, y: 31, rot: 10 },
+    mobileP28: { x: 52, y: 52, rot: 20 },
+    mobileP45: { x: 47, y: 54, rot: -16 },
+    mobileP65: { x: 14, y: 24, rot: 15 },
+    mobileP85: { x: 12, y: -2, rot: -25 },
+    mobileP1: { x: 11, y: 31, rot: 10 },
   },
   headphones: {
     id: 'headphones',
@@ -70,9 +79,12 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p65: { x: 34, y: 15, rot: -35 },
     p85: { x: 58, y: -3, rot: 25 },
     p1: { x: 56, y: 18, rot: -3 },
-    mobileP0: { x: 68, y: 21, rot: 4 },
-    mobileP65: { x: 68, y: 18, rot: -35 },
-    mobileP1: { x: 68, y: 21, rot: 4 },
+    mobileP0: { x: 66, y: 21, rot: 6 },
+    mobileP28: { x: 46, y: 59, rot: -30 },
+    mobileP45: { x: 50, y: 57, rot: 10 },
+    mobileP65: { x: 68, y: 18, rot: -25 },
+    mobileP85: { x: 66, y: -3, rot: 20 },
+    mobileP1: { x: 66, y: 21, rot: 6 },
   },
   'sticky-notes': {
     id: 'sticky-notes',
@@ -83,6 +95,12 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p65: { x: 42, y: 84, rot: -25 },
     p85: { x: 70, y: 50, rot: 30 },
     p1: { x: 79.5, y: 29.5, rot: 5 },
+    mobileP0: { x: 90, y: 33, rot: -6 },
+    mobileP28: { x: 88, y: 68, rot: 25 },
+    mobileP45: { x: 86, y: 66, rot: 10 },
+    mobileP65: { x: 88, y: 35, rot: -20 },
+    mobileP85: { x: 86, y: 18, rot: 24 },
+    mobileP1: { x: 90, y: 33, rot: -6 },
   },
   'tape-roll': {
     id: 'tape-roll',
@@ -93,6 +111,12 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p65: { x: 50, y: 26, rot: 30 },
     p85: { x: 44, y: 0, rot: -28 },
     p1: { x: 23, y: 43, rot: 0 },
+    mobileP0: { x: 4, y: 47, rot: 25 },
+    mobileP28: { x: 53, y: 58, rot: 35 },
+    mobileP45: { x: 51, y: 56, rot: -15 },
+    mobileP65: { x: 8, y: 26, rot: 20 },
+    mobileP85: { x: 6, y: 18, rot: -20 },
+    mobileP1: { x: 4, y: 47, rot: 25 },
   },
   plant: {
     id: 'plant',
@@ -103,9 +127,12 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p65: { x: 86, y: 86, rot: 24 },
     p85: { x: -1, y: 70, rot: -30 },
     p1: { x: 5, y: 51, rot: 0 },
-    mobileP0: { x: 18, y: 58, rot: 0 },
-    mobileP65: { x: 22, y: 84, rot: 24 },
-    mobileP1: { x: 18, y: 58, rot: 0 },
+    mobileP0: { x: 10, y: 58, rot: -6 },
+    mobileP28: { x: 44, y: 56, rot: 25 },
+    mobileP45: { x: 46, y: 57, rot: -18 },
+    mobileP65: { x: 24, y: 82, rot: 18 },
+    mobileP85: { x: 2, y: 56, rot: -24 },
+    mobileP1: { x: 10, y: 58, rot: -6 },
   },
   ruler: {
     id: 'ruler',
@@ -116,6 +143,12 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p65: { x: 18, y: 84, rot: 25 },
     p85: { x: 25, y: 103, rot: -5 },
     p1: { x: 12, y: 76, rot: -35 },
+    mobileP0: { x: 82, y: 92, rot: 14 },
+    mobileP28: { x: 50, y: 64, rot: 10 },
+    mobileP45: { x: 50, y: 62, rot: -15 },
+    mobileP65: { x: 80, y: 88, rot: 18 },
+    mobileP85: { x: 82, y: 92, rot: 14 },
+    mobileP1: { x: 82, y: 92, rot: 14 },
   },
   'coffee-cup': {
     id: 'coffee-cup',
@@ -126,10 +159,12 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p65: { x: 53, y: 90, rot: 32 },
     p85: { x: 31, y: 50, rot: -28 },
     p1: { x: 26, y: 70, rot: -3 },
-    mobileP0: { x: 76, y: 58, rot: -3 },
-    mobileP65: { x: 76, y: 84, rot: 32 },
-    mobileP85: { x: 25, y: 50, rot: -28 },
-    mobileP1: { x: 76, y: 58, rot: -3 },
+    mobileP0: { x: 86, y: 60, rot: 8 },
+    mobileP28: { x: 46, y: 60, rot: 28 },
+    mobileP45: { x: 48, y: 58, rot: -10 },
+    mobileP65: { x: 80, y: 70, rot: 26 },
+    mobileP85: { x: 82, y: 52, rot: -20 },
+    mobileP1: { x: 86, y: 60, rot: 8 },
   },
   scissors: {
     id: 'scissors',
@@ -140,6 +175,12 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p65: { x: 30, y: 88, rot: 40 },
     p85: { x: 70, y: 102, rot: -2 },
     p1: { x: 93.5, y: 57, rot: -30 },
+    mobileP0: { x: 32, y: 93, rot: -60 },
+    mobileP28: { x: 52, y: 62, rot: 20 },
+    mobileP45: { x: 52, y: 60, rot: -20 },
+    mobileP65: { x: 36, y: 90, rot: 35 },
+    mobileP85: { x: 34, y: 95, rot: -10 },
+    mobileP1: { x: 32, y: 93, rot: -60 },
   },
   'sd-cards': {
     id: 'sd-cards',
@@ -150,6 +191,12 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p65: { x: 68, y: 83, rot: 28 },
     p85: { x: 50, y: 104, rot: -38 },
     p1: { x: 91, y: 78, rot: -10 },
+    mobileP0: { x: 89, y: 79, rot: 10 },
+    mobileP28: { x: 90, y: 88, rot: 20 },
+    mobileP45: { x: 88, y: 85, rot: -15 },
+    mobileP65: { x: 86, y: 82, rot: 22 },
+    mobileP85: { x: 86, y: 96, rot: -25 },
+    mobileP1: { x: 89, y: 79, rot: 10 },
   },
   laptop: {
     id: 'laptop',
@@ -160,12 +207,12 @@ export const driftKeyframes: Record<string, ObjectKeyframes> = {
     p65: { x: 78, y: 13, rot: 26 },
     p85: { x: 50, y: 36, rot: -28 },
     p1: { x: 54, y: 71, rot: -3 },
-    mobileP0: { x: 50, y: 77, rot: -2 },
-    mobileP28: { x: 92, y: -6, rot: 35 },
-    mobileP45: { x: 88, y: -4, rot: -15 },
-    mobileP65: { x: 50, y: 82, rot: 26 },
-    mobileP85: { x: 50, y: 36, rot: -28 },
-    mobileP1: { x: 50, y: 77, rot: -2 },
+    mobileP0: { x: 48, y: 72, rot: -4 },
+    mobileP28: { x: 88, y: -6, rot: 30 },
+    mobileP45: { x: 86, y: -4, rot: -12 },
+    mobileP65: { x: 50, y: 82, rot: 20 },
+    mobileP85: { x: 48, y: 36, rot: -6 },
+    mobileP1: { x: 48, y: 72, rot: -4 },
   },
 };
 
@@ -189,6 +236,23 @@ export const AWAY_LAYOUT: Record<string, KeyframePosition> = {
   'sd-cards': { x: 52, y: 106, rot: -8 },
   scissors: { x: 72, y: 102, rot: 25 },
   pencil: { x: 90, y: 106, rot: 60 },
+};
+
+/**
+ * MOBILE AWAY LAYOUT (Objects cropped at edges, center clear, hand-phone always present at bottom edge)
+ */
+export const AWAY_LAYOUT_MOBILE: Record<string, KeyframePosition> = {
+  notebook: { x: 16, y: -5, rot: -18 },
+  'tape-roll': { x: -4, y: 32, rot: 20 },
+  headphones: { x: 50, y: -6, rot: 8 },
+  webcam: { x: 84, y: -5, rot: -10 },
+  laptop: { x: 50, y: 105, rot: -4 },
+  'sticky-notes': { x: 104, y: 32, rot: 18 },
+  plant: { x: -4, y: 68, rot: 0 },
+  'coffee-cup': { x: 104, y: 66, rot: 12 },
+  'sd-cards': { x: 104, y: 86, rot: -8 },
+  scissors: { x: 30, y: 106, rot: 25 },
+  ruler: { x: 82, y: 98, rot: 14 },
 };
 
 /**
@@ -348,7 +412,9 @@ export function getBlendedObjectTransform(
   isEnteringAway: boolean
 ): KeyframePosition {
   const homePos = getObjectTransform(id, homeP, isMobile);
-  const awayPos = AWAY_LAYOUT[id] || homePos;
+  const awayPos = isMobile
+    ? (AWAY_LAYOUT_MOBILE[id] || AWAY_LAYOUT[id] || homePos)
+    : (AWAY_LAYOUT[id] || homePos);
 
   if (globalA <= 0) return homePos;
   if (globalA >= 1) return awayPos;
