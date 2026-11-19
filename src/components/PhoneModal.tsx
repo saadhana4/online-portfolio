@@ -97,6 +97,7 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
   const [topic, setTopic] = useState('Internship');
   const [message, setMessage] = useState('');
   const [isCopied, setIsCopied] = useState(false);
+  const [isSent, setIsSent] = useState(false);
 
   // Helper to restore original desk object
   const restoreDeskObject = useCallback(() => {
@@ -463,16 +464,27 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [triggerClose]);
 
-  // Handle Contact Send action (opens Gmail compose with pre-filled details)
+  // Handle Contact Send action (opens Gmail compose in a NEW tab with pre-filled details)
   const handleSendMail = (e: React.FormEvent) => {
     e.preventDefault();
     const subject = `[${topic}] Portfolio Message${fromEmail ? ` from ${fromEmail}` : ''}`;
     const bodyContent = `${message}\n\n---\nSent from Portfolio Contact Screen\nFrom: ${fromEmail || 'Not specified'}`;
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(profileData.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyContent)}`;
-    const win = window.open(gmailUrl, '_blank', 'noopener,noreferrer');
-    if (!win) {
-      window.location.href = gmailUrl;
-    }
+
+    // Open reliably in a brand new tab without navigating the portfolio page
+    const a = document.createElement('a');
+    a.href = gmailUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // Display friendly feedback message
+    setIsSent(true);
+    setTimeout(() => {
+      setIsSent(false);
+    }, 6000);
   };
 
   const handleCopyEmail = () => {
@@ -613,7 +625,7 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                       className="mail-send-btn"
                       aria-label="Send email via mail application"
                     >
-                      Send
+                      {isSent ? 'Sent ✓' : 'Send'}
                     </button>
                   </div>
 
@@ -697,15 +709,20 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                       />
                     </div>
 
-                    {/* 5. Primary Send Button */}
+                    {/* 5. Primary Send Button & Friendly Message */}
                     <div className={`mail-submit-row ${formVisible ? 'form-row-stagger-5' : 'row-hidden'}`}>
                       <button
                         type="submit"
-                        className="mail-primary-send-btn font-handwriting"
+                        className={`mail-primary-send-btn font-handwriting ${isSent ? 'is-sent' : ''}`}
                         aria-label="Send message"
                       >
-                        Send message ✉
+                        {isSent ? 'Opening Gmail... ✨' : 'Send message ✉'}
                       </button>
+                      {isSent && (
+                        <div className="mail-sent-feedback font-handwriting" role="status" aria-live="polite">
+                          Opening Gmail in a new tab — looking forward to your message! ✨
+                        </div>
+                      )}
                     </div>
                   </form>
                 </div>

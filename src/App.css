@@ -1693,7 +1693,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 8px 12px 10px 12px;
+  padding: 8px 12px 16px 12px;
   overflow-y: auto;
   gap: 6px;
 }
@@ -1800,8 +1800,10 @@
 
 .mail-submit-row {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
   padding-top: 2px;
+  gap: 4px;
 }
 
 .mail-primary-send-btn {
@@ -1814,11 +1816,37 @@
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(184, 80, 50, 0.25);
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, background-color 0.2s ease;
 }
 
 .mail-primary-send-btn:hover {
   transform: scale(1.03);
+}
+
+.mail-primary-send-btn.is-sent {
+  background-color: #2e593f;
+  box-shadow: 0 2px 6px rgba(46, 89, 63, 0.25);
+}
+
+.mail-sent-feedback {
+  font-family: var(--font-handwriting);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: right;
+  line-height: 1.25;
+  animation: sentFeedbackFadeIn 250ms ease forwards;
+}
+
+@keyframes sentFeedbackFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Form rows stagger: fade and rise 8px in 60ms stagger */
