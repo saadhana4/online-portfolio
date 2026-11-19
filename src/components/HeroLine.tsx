@@ -23,7 +23,7 @@ export const HeroLine = forwardRef<HTMLDivElement, HeroLineProps>(
     },
     ref
   ) => {
-    const isHiddenOrInert = isAway || isPhoneOpen || (isLoading && !isLoadingRevealed);
+    const isHiddenOrInert = isAway || isPhoneOpen;
 
     return (
       <div

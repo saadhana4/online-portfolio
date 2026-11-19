@@ -118,8 +118,8 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
     let isCancelled = false;
     const startTime = performance.now();
     const isReduced = checkReducedMotion();
-    const minDuration = isReduced ? 600 : 1200;
-    const maxDuration = 4000;
+    const minDuration = isReduced ? 600 : 2000;
+    const maxDuration = 4500;
 
     const visible = deskObjects.filter((obj) => (isMobileRef.current ? obj.showOnMobile : true));
 
@@ -207,7 +207,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
 
       const elapsed = performance.now() - startTime;
 
-      // 4s timeout fallback: reveal everything regardless
+      // 4.5s timeout fallback: reveal everything regardless
       if (elapsed >= maxDuration) {
         window.clearInterval(staggerInterval);
         triggerFinish();
@@ -216,7 +216,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
 
       if (revealIndex < orderedIds.length) {
         const nextId = orderedIds[revealIndex];
-        if (decodedSet.has(nextId) || elapsed > 2000) {
+        if (decodedSet.has(nextId) || elapsed > 1500) {
           setRevealedObjectIds((prev) => new Set([...prev, nextId]));
           revealIndex++;
         }

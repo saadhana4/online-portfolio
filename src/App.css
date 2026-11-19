@@ -2083,19 +2083,25 @@
 }
 
 /* Hero Line loading state */
-.desk-hero-minimal.is-loading {
+.desk-hero-minimal.is-loading .hero-single-line {
   opacity: 0 !important;
-  visibility: hidden !important;
   pointer-events: none !important;
 }
 
-.desk-hero-minimal.is-loading-revealed {
+.desk-hero-minimal.is-loading-revealed .hero-single-line {
   opacity: 1 !important;
-  visibility: visible !important;
   transition: opacity 400ms ease-out !important;
 }
 
 /* Stickman thought bubble ("loading") */
+.stickman-thought-lag-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 12;
+}
+
 .stickman-thought-bubble {
   position: absolute;
   bottom: 74px;

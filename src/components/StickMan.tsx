@@ -18,6 +18,7 @@ export const StickMan: React.FC<StickManProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const doodleSvgRef = useRef<SVGSVGElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
+  const thoughtLagRef = useRef<HTMLDivElement>(null);
 
   // SVG limb refs for direct 60/120fps manipulation without React re-renders
   const headGroupRef = useRef<SVGGElement>(null);
@@ -58,10 +59,13 @@ export const StickMan: React.FC<StickManProps> = ({
   const lastTimeRef = useRef<number>(0);
   const isInitializedRef = useRef<boolean>(false);
 
-  // Loading animation tracking refs
+  // Loading animation distance & timing tracking refs
   const sequenceStateRef = useRef<'idle' | 'loading_walk' | 'returning' | 'arrived'>('idle');
-  const returnStartTimeRef = useRef<number>(0);
-  const returnStartXRef = useRef<number>(0);
+  const distanceTraveledRef = useRef<number>(0);
+  const thoughtXRef = useRef<number>(0);
+  const hasPausedAtThirdRef = useRef<boolean>(false);
+  const isPausingAtThirdRef = useRef<boolean>(false);
+  const pauseStartTimeRef = useRef<number>(0);
   const loadingProgressRef = useRef<number>(loadingProgress);
 
   useEffect(() => {
@@ -85,8 +89,12 @@ export const StickMan: React.FC<StickManProps> = ({
     return isMobile ? Math.max(16, window.innerWidth * 0.03) : Math.max(28, window.innerWidth * 0.03);
   }, []);
 
-  // Set pose for the 3 hand-drawn walk frames
-  const applyWalkFrame = useCallback((frame: 0 | 1 | 2) => {
+  // 4-frame hand-drawn walk cycle driven by distance (~14px per frame)
+  // (1) contact: front leg forward, back leg back
+  // (2) passing: legs together, one knee slightly bent (bob: -1px)
+  // (3) contact: other leg forward
+  // (4) passing: legs together again, other knee slightly bent (bob: -1px)
+  const applyWalkFrame = useCallback((frame: 0 | 1 | 2 | 3) => {
     const head = headGroupRef.current;
     const spine = spineRef.current;
     const armF = armFrontRef.current;
@@ -97,35 +105,45 @@ export const StickMan: React.FC<StickManProps> = ({
     if (!head || !spine || !armF || !armB || !legF || !legB) return;
 
     if (frame === 0) {
-      // Frame 0: Legs apart (right leg forward, left leg back)
+      // Frame 0: Contact 1 (front leg forward, back leg back, slight forward lean)
+      head.setAttribute('transform', 'translate(0, 0) rotate(3.5 16 14)');
+      spine.setAttribute('y1', '21.6');
+      spine.setAttribute('y2', '44');
+      armF.setAttribute('d', 'M 16 25 Q 11 34 7.5 42');
+      armB.setAttribute('d', 'M 16 25 Q 21.5 34 25 42');
+      legF.setAttribute('d', 'M 16 44 L 21.5 62 L 26 80');
+      legB.setAttribute('d', 'M 16 44 L 11 62 L 6.5 80');
+    } else if (frame === 1) {
+      // Frame 1: Passing 1 (legs together, back knee slightly bent, 1px bob)
       head.setAttribute('transform', 'translate(0, -1) rotate(2 16 14)');
       spine.setAttribute('y1', '20.6');
       spine.setAttribute('y2', '43');
-      armF.setAttribute('d', 'M 16 25 Q 12 34 8 42');
-      armB.setAttribute('d', 'M 16 25 Q 21 34 25 42');
-      legF.setAttribute('d', 'M 16 43 L 21 62 L 25 80');
-      legB.setAttribute('d', 'M 16 43 L 11 62 L 7 80');
-    } else if (frame === 1) {
-      // Frame 1: Legs together (passing position, 0px vertical bob)
-      head.setAttribute('transform', 'translate(0, 0) rotate(0 16 14)');
-      spine.setAttribute('y1', '21.6');
-      spine.setAttribute('y2', '44');
       armF.setAttribute('d', 'M 16 25 Q 15 35 14 45');
       armB.setAttribute('d', 'M 16 25 Q 17 35 18 45');
-      legF.setAttribute('d', 'M 16 44 L 16 62 L 16 80');
-      legB.setAttribute('d', 'M 16 44 L 16.5 61 L 17 78');
+      legF.setAttribute('d', 'M 16 43 L 16 62 L 16 80');
+      legB.setAttribute('d', 'M 16 43 L 19 59 L 14 74');
+    } else if (frame === 2) {
+      // Frame 2: Contact 2 (other leg forward, front leg back)
+      head.setAttribute('transform', 'translate(0, 0) rotate(3.5 16 14)');
+      spine.setAttribute('y1', '21.6');
+      spine.setAttribute('y2', '44');
+      armF.setAttribute('d', 'M 16 25 Q 21.5 34 25 42');
+      armB.setAttribute('d', 'M 16 25 Q 11 34 7.5 42');
+      legF.setAttribute('d', 'M 16 44 L 11 62 L 6.5 80');
+      legB.setAttribute('d', 'M 16 44 L 21.5 62 L 26 80');
     } else {
-      // Frame 2: Legs apart the other way (left leg forward, right leg back)
-      head.setAttribute('transform', 'translate(0, -1) rotate(-2 16 14)');
+      // Frame 3: Passing 2 (legs together again, front knee slightly bent, 1px bob)
+      head.setAttribute('transform', 'translate(0, -1) rotate(2 16 14)');
       spine.setAttribute('y1', '20.6');
       spine.setAttribute('y2', '43');
-      armF.setAttribute('d', 'M 16 25 Q 21 34 25 42');
-      armB.setAttribute('d', 'M 16 25 Q 12 34 8 42');
-      legF.setAttribute('d', 'M 16 43 L 11 62 L 7 80');
-      legB.setAttribute('d', 'M 16 43 L 21 62 L 25 80');
+      armF.setAttribute('d', 'M 16 25 Q 17 35 18 45');
+      armB.setAttribute('d', 'M 16 25 Q 15 35 14 45');
+      legF.setAttribute('d', 'M 16 43 L 19 59 L 14 74');
+      legB.setAttribute('d', 'M 16 43 L 16 62 L 16 80');
     }
   }, []);
 
+  // Idle resting pose with gentle breathing
   const applyIdlePose = useCallback((now: number) => {
     const head = headGroupRef.current;
     const spine = spineRef.current;
@@ -144,6 +162,26 @@ export const StickMan: React.FC<StickManProps> = ({
     armB.setAttribute('d', `M 16 ${25 + breathe} Q 18 35 19.5 45`);
     legF.setAttribute('d', `M 16 ${44 + breathe} L 13.5 62 L 10 80`);
     legB.setAttribute('d', `M 16 ${44 + breathe} L 19 62 L 23 80`);
+  }, []);
+
+  // Lazy pause pose at roughly 1/3 distance: stand idle with a tiny head tilt (6deg)
+  const applyPausePose = useCallback(() => {
+    const head = headGroupRef.current;
+    const spine = spineRef.current;
+    const armF = armFrontRef.current;
+    const armB = armBackRef.current;
+    const legF = legFrontRef.current;
+    const legB = legBackRef.current;
+
+    if (!head || !spine || !armF || !armB || !legF || !legB) return;
+
+    head.setAttribute('transform', 'translate(0, 0) rotate(6 16 14)');
+    spine.setAttribute('y1', '21.6');
+    spine.setAttribute('y2', '44');
+    armF.setAttribute('d', 'M 16 25 Q 13.5 35 10 44');
+    armB.setAttribute('d', 'M 16 25 Q 18 35 19.5 45');
+    legF.setAttribute('d', 'M 16 44 L 14 62 L 12 80');
+    legB.setAttribute('d', 'M 16 44 L 18 62 L 20 80');
   }, []);
 
   // Jump in place (desktop WASD)
@@ -192,7 +230,7 @@ export const StickMan: React.FC<StickManProps> = ({
     return () => window.removeEventListener('touchstart', handleFirstTouch);
   }, [isTouchDevice]);
 
-  // Fade out thought bubble when sequence ends
+  // Fade out thought bubble when sequence ends (150ms)
   useEffect(() => {
     if (isSequenceEnding && !thoughtFadedOut) {
       const timer = window.setTimeout(() => {
@@ -209,7 +247,6 @@ export const StickMan: React.FC<StickManProps> = ({
     } else if (isSequenceEnding && sequenceStateRef.current === 'loading_walk') {
       // Check reduced motion
       if (reducedMotionRef.current) {
-        // Instant finish without walking
         sequenceStateRef.current = 'arrived';
         posXRef.current = getHomeX();
         facingRef.current = 'right';
@@ -219,11 +256,10 @@ export const StickMan: React.FC<StickManProps> = ({
         return;
       }
 
-      // Start returning walk back to home spot (steady pace over 700ms)
+      // Start returning walk back to home spot (relaxed pace at ~85px/s)
       sequenceStateRef.current = 'returning';
-      returnStartTimeRef.current = performance.now();
-      returnStartXRef.current = posXRef.current;
       facingRef.current = 'left';
+      isPausingAtThirdRef.current = false;
     }
   }, [isLoading, isSequenceEnding, getHomeX, onSequenceComplete]);
 
@@ -257,7 +293,18 @@ export const StickMan: React.FC<StickManProps> = ({
 
     if (!isInitializedRef.current) {
       posXRef.current = getHomeX();
+      thoughtXRef.current = posXRef.current;
       isInitializedRef.current = true;
+    }
+
+    if (typeof window !== 'undefined') {
+      (window as unknown as { __stickMan?: unknown }).__stickMan = {
+        getPosX: () => posXRef.current,
+        setPosX: (x: number) => {
+          posXRef.current = x;
+        },
+        getState: () => sequenceStateRef.current,
+      };
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -334,6 +381,7 @@ export const StickMan: React.FC<StickManProps> = ({
       const state = sequenceStateRef.current;
       const homeX = getHomeX();
       let jumpY = 0;
+      let swayX = 0;
 
       if (state === 'loading_walk') {
         facingRef.current = 'right';
@@ -341,16 +389,52 @@ export const StickMan: React.FC<StickManProps> = ({
           posXRef.current = homeX;
           applyIdlePose(now);
         } else {
-          // Progress from 3% to 60% of screen width
-          const maxX = window.innerWidth * 0.60;
-          const targetX = homeX + loadingProgressRef.current * (maxX - homeX);
-          // Smoothed movement
-          posXRef.current += (targetX - posXRef.current) * (1 - Math.exp(-dt * 5.5));
+          const scale = window.innerWidth / 1366;
+          const walkSpeed = 55 * scale;
+          const stepDistance = Math.max(8, 14 * scale);
+          const maxX = window.innerWidth * 0.26;
+          const pauseX = homeX + (maxX - homeX) * (1 / 3);
 
-          // 3-frame walk cycle every 180ms with 1px vertical bob
-          const frameIndex = (Math.floor(now / 180) % 3) as 0 | 1 | 2;
-          applyWalkFrame(frameIndex);
-          jumpY = frameIndex === 1 ? 0 : -1;
+          if (posXRef.current < pauseX && !hasPausedAtThirdRef.current) {
+            // 1. Walking out to the 1/3 mark
+            const dx = Math.min(walkSpeed * dt, pauseX - posXRef.current);
+            posXRef.current += dx;
+            distanceTraveledRef.current += dx;
+            const frameIndex = (Math.floor(distanceTraveledRef.current / stepDistance) % 4) as 0 | 1 | 2 | 3;
+            applyWalkFrame(frameIndex);
+            jumpY = (frameIndex === 1 || frameIndex === 3) ? -1 : 0;
+          } else if (!hasPausedAtThirdRef.current && Math.abs(posXRef.current - pauseX) < 5) {
+            // Trigger 400ms lazy pause at 1/3 with tiny head tilt
+            hasPausedAtThirdRef.current = true;
+            isPausingAtThirdRef.current = true;
+            pauseStartTimeRef.current = now;
+            posXRef.current = pauseX;
+            applyPausePose();
+            jumpY = 0;
+          } else if (isPausingAtThirdRef.current) {
+            if (now - pauseStartTimeRef.current < 400) {
+              applyPausePose();
+              jumpY = 0;
+            } else {
+              isPausingAtThirdRef.current = false;
+            }
+          } else if (posXRef.current < maxX) {
+            hasPausedAtThirdRef.current = true;
+            // 2. Resuming walk towards the light bulb horizontal center (26% width)
+            const dx = Math.min(walkSpeed * dt, maxX - posXRef.current);
+            posXRef.current += dx;
+            distanceTraveledRef.current += dx;
+            const frameIndex = (Math.floor(distanceTraveledRef.current / stepDistance) % 4) as 0 | 1 | 2 | 3;
+            applyWalkFrame(frameIndex);
+            jumpY = (frameIndex === 1 || frameIndex === 3) ? -1 : 0;
+          } else {
+            hasPausedAtThirdRef.current = true;
+            // 3. Reached cap at light bulb center: stand idle with lazy 1px sway (2s cycle)
+            posXRef.current = maxX;
+            applyIdlePose(now);
+            jumpY = 0;
+            swayX = Math.sin((now / 2000) * 2 * Math.PI) * 1.0;
+          }
         }
       } else if (state === 'returning') {
         facingRef.current = 'left';
@@ -363,15 +447,20 @@ export const StickMan: React.FC<StickManProps> = ({
           setIsScrollBubblePopped(true);
           onSequenceComplete?.();
         } else {
-          const elapsed = now - returnStartTimeRef.current;
-          const t = Math.min(1, elapsed / 700);
-          posXRef.current = returnStartXRef.current + (homeX - returnStartXRef.current) * t;
+          // Relaxed return pace: ~85px/s (scaled with viewport width)
+          const scale = window.innerWidth / 1366;
+          const returnSpeed = 85 * scale;
+          const stepDistance = Math.max(8, 14 * scale);
 
-          const frameIndex = (Math.floor(now / 180) % 3) as 0 | 1 | 2;
+          const dx = returnSpeed * dt;
+          posXRef.current = Math.max(homeX, posXRef.current - dx);
+          distanceTraveledRef.current += dx;
+
+          const frameIndex = (Math.floor(distanceTraveledRef.current / stepDistance) % 4) as 0 | 1 | 2 | 3;
           applyWalkFrame(frameIndex);
-          jumpY = frameIndex === 1 ? 0 : -1;
+          jumpY = (frameIndex === 1 || frameIndex === 3) ? -1 : 0;
 
-          if (t >= 1) {
+          if (posXRef.current <= homeX) {
             posXRef.current = homeX;
             facingRef.current = 'right';
             sequenceStateRef.current = 'arrived';
@@ -469,9 +558,25 @@ export const StickMan: React.FC<StickManProps> = ({
         }
       }
 
+      // Gentle 150ms lag for thought bubble ("loading")
+      if (showThoughtBubble) {
+        if (thoughtXRef.current === 0) {
+          thoughtXRef.current = posXRef.current;
+        }
+        const tau = 0.150;
+        const alpha = 1 - Math.exp(-dt / tau);
+        thoughtXRef.current += (posXRef.current - thoughtXRef.current) * alpha;
+
+        if (thoughtLagRef.current) {
+          const lagOffset = thoughtXRef.current - posXRef.current;
+          thoughtLagRef.current.style.transform = `translate3d(${lagOffset.toFixed(2)}px, 0, 0)`;
+        }
+      }
+
       // Update positions without mirroring text bubbles
       if (containerRef.current) {
-        containerRef.current.style.transform = `translate3d(${posXRef.current}px, ${jumpY}px, 0)`;
+        const finalX = posXRef.current + swayX;
+        containerRef.current.style.transform = `translate3d(${finalX.toFixed(1)}px, ${jumpY}px, 0)`;
       }
 
       if (doodleSvgRef.current) {
@@ -493,7 +598,9 @@ export const StickMan: React.FC<StickManProps> = ({
     };
   }, [
     isTouchDevice,
+    showThoughtBubble,
     applyIdlePose,
+    applyPausePose,
     applyWalkFrame,
     getHomeX,
     onSequenceComplete,
@@ -505,52 +612,58 @@ export const StickMan: React.FC<StickManProps> = ({
       className={`stickman-container ${isAway ? 'is-away' : ''}`}
       aria-hidden="true"
     >
-      {/* 1. Hand-drawn cloud-shaped THOUGHT BUBBLE ("loading") */}
+      {/* 1. Hand-drawn cloud-shaped THOUGHT BUBBLE ("loading") with gentle 150ms lag */}
       {showThoughtBubble && (
-        <svg
-          className={`stickman-thought-bubble ${isThoughtFading ? 'fading' : ''}`}
-          width="84"
-          height="46"
-          viewBox="0 0 84 46"
-          fill="none"
+        <div
+          ref={thoughtLagRef}
+          className="stickman-thought-lag-wrap"
           aria-hidden="true"
         >
-          {/* Two trailing circles from head to cloud */}
-          <circle cx="8" cy="40" r="2.2" stroke="var(--base-300)" strokeWidth="1.6" fill="var(--base-100)" />
-          <circle cx="16" cy="33" r="3.4" stroke="var(--base-300)" strokeWidth="1.6" fill="var(--base-100)" />
-
-          {/* Cloud shape outline */}
-          <path
-            d="M 30 32
-               C 23 32 18 26 21 20
-               C 18 14 24 8 30 10
-               C 35 5 45 4 50 8
-               C 57 4 67 7 69 13
-               C 76 15 78 22 74 27
-               C 77 33 71 38 65 36
-               C 59 40 47 40 42 36
-               C 37 39 29 37 30 32 Z"
-            stroke="var(--base-300)"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="var(--base-100)"
-          />
-          <text
-            x="48"
-            y="23"
-            textAnchor="middle"
-            dominantBaseline="central"
-            fill="var(--base-300)"
-            fontFamily="var(--font-handwriting, 'Caveat', cursive)"
-            fontSize="14px"
-            fontWeight="600"
-            letterSpacing="0.8px"
-            style={{ textTransform: 'lowercase', fontVariant: 'small-caps' }}
+          <svg
+            className={`stickman-thought-bubble ${isThoughtFading ? 'fading' : ''}`}
+            width="84"
+            height="46"
+            viewBox="0 0 84 46"
+            fill="none"
+            aria-hidden="true"
           >
-            loading
-          </text>
-        </svg>
+            {/* Two trailing circles from head to cloud */}
+            <circle cx="8" cy="40" r="2.2" stroke="var(--base-300)" strokeWidth="1.6" fill="var(--base-100)" />
+            <circle cx="16" cy="33" r="3.4" stroke="var(--base-300)" strokeWidth="1.6" fill="var(--base-100)" />
+
+            {/* Cloud shape outline */}
+            <path
+              d="M 30 32
+                 C 23 32 18 26 21 20
+                 C 18 14 24 8 30 10
+                 C 35 5 45 4 50 8
+                 C 57 4 67 7 69 13
+                 C 76 15 78 22 74 27
+                 C 77 33 71 38 65 36
+                 C 59 40 47 40 42 36
+                 C 37 39 29 37 30 32 Z"
+              stroke="var(--base-300)"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="var(--base-100)"
+            />
+            <text
+              x="48"
+              y="23"
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill="var(--base-300)"
+              fontFamily="var(--font-handwriting, 'Caveat', cursive)"
+              fontSize="14px"
+              fontWeight="600"
+              letterSpacing="0.8px"
+              style={{ textTransform: 'lowercase', fontVariant: 'small-caps' }}
+            >
+              loading
+            </text>
+          </svg>
+        </div>
       )}
 
       {/* 2. Hand-drawn SPEECH BUBBLE ("scroll" / "swipe") popping in after arrival */}
@@ -638,27 +751,27 @@ export const StickMan: React.FC<StickManProps> = ({
         aria-hidden="true"
       >
         {/* Head & hair loop doodle */}
-        <g ref={headGroupRef}>
+        <g ref={headGroupRef} style={{ transformOrigin: '16px 14px' }}>
           <ellipse
             cx="16"
             cy="14"
-            rx="5.8"
-            ry="7.6"
+            rx="6.5"
+            ry="7.5"
             stroke="#282421"
-            strokeWidth="2.2"
+            strokeWidth="1.9"
             fill="none"
             strokeLinecap="round"
           />
           <path
             d="M 14.5 7 Q 17 4 19 3"
             stroke="#282421"
-            strokeWidth="1.8"
-            strokeLinecap="round"
+            strokeWidth="1.6"
             fill="none"
+            strokeLinecap="round"
           />
         </g>
 
-        {/* Torso spine */}
+        {/* Spine / Torso: from neck (16, 21.6) to hips (16, 44) */}
         <line
           ref={spineRef}
           x1="16"
@@ -666,46 +779,42 @@ export const StickMan: React.FC<StickManProps> = ({
           x2="16"
           y2="44"
           stroke="#282421"
-          strokeWidth="2.2"
+          strokeWidth="2.1"
           strokeLinecap="round"
         />
 
-        {/* Arms (back and front) */}
+        {/* Arms & Legs (drawn with slight hand-drawn curvature) */}
         <path
           ref={armBackRef}
           d="M 16 25 Q 18 35 19.5 45"
-          stroke="#332e2a"
-          strokeWidth="2"
-          strokeLinecap="round"
+          stroke="#282421"
+          strokeWidth="1.8"
           fill="none"
-        />
-        <path
-          ref={armFrontRef}
-          d="M 16 25 Q 13.5 35 10 44"
-          stroke="#25201d"
-          strokeWidth="2.2"
           strokeLinecap="round"
-          fill="none"
         />
-
-        {/* Legs (back and front) */}
         <path
           ref={legBackRef}
           d="M 16 44 L 19 62 L 23 80"
-          stroke="#332e2a"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          stroke="#282421"
+          strokeWidth="2.0"
           fill="none"
+          strokeLinecap="round"
         />
         <path
           ref={legFrontRef}
           d="M 16 44 L 13.5 62 L 10 80"
-          stroke="#25201d"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          stroke="#282421"
+          strokeWidth="2.1"
           fill="none"
+          strokeLinecap="round"
+        />
+        <path
+          ref={armFrontRef}
+          d="M 16 25 Q 13.5 35 10 44"
+          stroke="#282421"
+          strokeWidth="1.9"
+          fill="none"
+          strokeLinecap="round"
         />
       </svg>
     </div>
