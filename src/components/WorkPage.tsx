@@ -90,6 +90,21 @@ export const WorkPage: React.FC<WorkPageProps> = ({ onBack }) => {
       role="region"
       aria-label="Featured Software Engineering Projects"
     >
+      {/* Hidden SVG filter for the subtle hand-drawn wobble on the frame outline */}
+      <svg
+        width="0"
+        height="0"
+        style={{ position: 'absolute', pointerEvents: 'none' }}
+        aria-hidden="true"
+      >
+        <defs>
+          <filter id="workFrameWobble" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
+
       {/* Visually hidden screen reader announcements & h1 heading */}
       <h1 className="sr-only">Featured Projects</h1>
       <div className="sr-only" aria-live="polite" aria-atomic="true">
@@ -97,82 +112,41 @@ export const WorkPage: React.FC<WorkPageProps> = ({ onBack }) => {
       </div>
 
       <div className="work-content-wrapper">
-        {/* Header row with "Back to Desk" button (hidden under 700px on mobile) */}
-        <div className="work-header-row">
-          <button
-            type="button"
-            className="pill-btn pill-sage work-back-btn"
-            onClick={onBack}
-            aria-label="Back to desk"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            <span>Back to Desk</span>
-          </button>
-        </div>
-
         {/* Two-Column Layout (Desktop) / Stacked (Tablet & Mobile) */}
         <div key={animKey} className={`work-two-column-block ${animClass}`}>
-          {/* Left Column: Framed visual window */}
+          {/* Left Column: Simple frame (single image edge-to-edge + wobbled outline) */}
           <div
-            className="work-visual-frame wobbly-border"
+            className="work-visual-frame"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
-            {/* Washi tape accents */}
-            <div className="washi-tape tape-top-left" aria-hidden="true" />
-            <div className="washi-tape tape-top-right" aria-hidden="true" />
-
-            {/* Counter pill tucked at the frame's top corner */}
-            <div className="work-counter font-handwriting" aria-hidden="true">
-              Project {String(currentIndex + 1).padStart(2, '0')} / {String(totalProjects).padStart(2, '0')}
-            </div>
-
-            {/* Project visual illustration */}
-            <div className="project-visual-wrapper">
-              <img
-                src={project.image}
-                alt={project.alt}
-                width={500}
-                height={320}
-                className="project-visual-img"
-                loading="eager"
-              />
-            </div>
+            <img
+              src={project.image}
+              alt={project.alt}
+              width={500}
+              height={333}
+              className="project-visual-img"
+              loading="eager"
+            />
+            <div className="work-frame-outline" aria-hidden="true" />
           </div>
 
-          {/* Right Column: Project details on paper (no card background or border) */}
+          {/* Right Column: Project details on paper */}
           <div className="work-info-column">
             {project.highlight && (
-              <span className="project-highlight-pill font-handwriting">
+              <div className="project-highlight-plain font-handwriting">
                 {project.highlight}
-              </span>
+              </div>
             )}
 
             <h2 className="project-title font-handwriting">{project.title}</h2>
             <p className="project-subtitle">{project.subtitle}</p>
             <p className="project-summary">{project.summary}</p>
 
-            {/* Tech tag pills in a wrapping row */}
-            <div className="project-tags-row" aria-label="Technologies used">
-              {project.tags.map((tag) => (
-                <span key={tag} className="tech-tag-pill">
-                  #{tag}
-                </span>
-              ))}
-            </div>
+            {/* Plain tech tags line with middle dots */}
+            <p className="project-tags-plain" aria-label="Technologies used">
+              {project.tags.join(' · ')}
+            </p>
           </div>
 
           {/* Slider controls: Previous/Next arrows + dot pagination */}

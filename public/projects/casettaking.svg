@@ -8,10 +8,6 @@
   </defs>
   <rect width="500" height="320" rx="16" fill="url(#health-grid)"/>
 
-  <!-- Washi tape at top -->
-  <polygon points="40,0 100,0 90,20 30,20" fill="#C8553D" opacity="0.8"/>
-  <polygon points="410,0 470,0 480,20 420,20" fill="#F3E3A3" opacity="0.85"/>
-
   <!-- Left: Biometric Smart ID Badge -->
   <g transform="translate(45, 45)">
     <!-- ID Card Lanyard slot -->
@@ -98,9 +94,4 @@
     </g>
   </g>
 
-  <!-- Bottom Handwritten badge -->
-  <g transform="translate(250, 275)">
-    <rect x="-180" y="0" width="360" height="30" rx="15" fill="#FAFBF7" stroke="#1F2A24" stroke-width="2"/>
-    <text x="0" y="20" font-family="'Caveat', cursive, sans-serif" font-size="16" font-weight="bold" fill="#1F2A24" text-anchor="middle">Biometric Identification &amp; Ayush Health Records</text>
-  </g>
 </svg>

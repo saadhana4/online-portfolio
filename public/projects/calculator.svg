@@ -8,10 +8,6 @@
   </defs>
   <rect width="500" height="320" rx="16" fill="url(#calc-grid)"/>
 
-  <!-- Washi tape at corners -->
-  <polygon points="30,0 85,0 75,20 20,20" fill="#F3E3A3" opacity="0.85"/>
-  <polygon points="415,0 470,0 480,20 425,20" fill="#C8553D" opacity="0.7"/>
-
   <!-- Left: Real-time hand landmark tracking wireframe -->
   <g transform="translate(45, 45)">
     <!-- Camera feed canvas -->
@@ -127,9 +123,4 @@
     <text x="138" y="181" font-family="'Nunito', sans-serif" font-size="14" font-weight="bold" fill="#1F2A24" text-anchor="middle">+</text>
   </g>
 
-  <!-- Bottom Handwritten ribbon -->
-  <g transform="translate(250, 275)">
-    <rect x="-185" y="0" width="370" height="30" rx="15" fill="#FAFBF7" stroke="#1F2A24" stroke-width="2"/>
-    <text x="0" y="20" font-family="'Caveat', cursive, sans-serif" font-size="16" font-weight="bold" fill="#1F2A24" text-anchor="middle">Air-gesture calculations • OpenCV &amp; MediaPipe</text>
-  </g>
 </svg>

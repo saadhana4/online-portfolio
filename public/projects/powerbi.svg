@@ -8,10 +8,6 @@
   </defs>
   <rect width="500" height="320" rx="16" fill="url(#pbi-grid)"/>
 
-  <!-- Washi tape at top -->
-  <polygon points="40,0 100,0 90,20 30,20" fill="#F3E3A3" opacity="0.85"/>
-  <polygon points="410,0 470,0 480,20 420,20" fill="#88B49E" opacity="0.85"/>
-
   <!-- Main Dashboard Container -->
   <g transform="translate(35, 38)">
     <rect x="0" y="0" width="430" height="205" rx="12" fill="#FAFBF7" stroke="#1F2A24" stroke-width="3"/>
@@ -107,9 +103,4 @@
     </g>
   </g>
 
-  <!-- Bottom Callout -->
-  <g transform="translate(250, 275)">
-    <rect x="-195" y="0" width="390" height="30" rx="15" fill="#FAFBF7" stroke="#1F2A24" stroke-width="2"/>
-    <text x="0" y="20" font-family="'Caveat', cursive, sans-serif" font-size="15.5" font-weight="bold" fill="#1F2A24" text-anchor="middle">Interactive Sales Dashboards &amp; Power BI Analytics</text>
-  </g>
 </svg>
