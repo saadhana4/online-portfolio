@@ -50,8 +50,8 @@ export const projects: Project[] = [
     summary:
       'Flask healthcare app: fingerprint and face-recognition patient identification, doctor consent workflows with time-limited emergency access, audit logging, Twilio SMS alerts, Ayush intake mapped to NAMASTE and ICD-11 TM2.',
     tags: ['Flask', 'Biometrics', 'Twilio SMS', 'ICD-11 TM2', 'NAMASTE', 'Audit Logging'],
-    image: '/projects/casettaking.svg',
-    alt: 'Digital Case-Taking and Emergency Health ID System with consent workflow',
+    image: '/projects/casettaking.png',
+    alt: 'BioLink AYUSH digital case-taking and emergency health ID platform interface with biometric intake and triage',
     highlight: 'Biometric Access & Ayush Intake Standards',
   },
   {
