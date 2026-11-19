@@ -490,14 +490,6 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                 <div className="notes-app-screen">
                   {/* Notes Header */}
                   <div className={`notes-app-header ${formVisible ? 'header-visible' : 'header-hidden'}`}>
-                    <button
-                      type="button"
-                      className="notes-back-btn"
-                      onClick={triggerClose}
-                      aria-label="Back to desk"
-                    >
-                      ‹ Desk
-                    </button>
                     <span className="notes-app-title">Notes</span>
                     <button
                       type="button"
@@ -509,33 +501,25 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                     </button>
                   </div>
 
-                  {/* Notes Body (Lined Notepad) */}
+                  {/* Notes Body */}
                   <div className="notes-scrollable-body">
-                    <div className={`notes-date-stamp font-handwriting ${formVisible ? 'notes-row-stagger-1' : 'row-hidden'}`}>
-                      Today, 4:20 PM • Personal Notes
-                    </div>
-
-                    {/* Photo Slot: Polaroid with User Photo */}
-                    <div className={`notes-photo-slot ${formVisible ? 'notes-row-stagger-2' : 'row-hidden'}`}>
+                    {/* Direct User Photo */}
+                    <div className={`notes-photo-slot ${formVisible ? 'notes-row-stagger-1' : 'row-hidden'}`}>
                       <img
-                        src="/avatar-placeholder.svg"
+                        src="/saadhana-photo.jpg"
                         alt="Portrait photo of Saadhana Karthikeyan"
-                        width={140}
-                        height={168}
+                        width={136}
+                        height={136}
                         className="notes-avatar-img"
                         loading="eager"
                       />
                     </div>
 
                     {/* Bio Statement */}
-                    <div className={`notes-bio-block ${formVisible ? 'notes-row-stagger-3' : 'row-hidden'}`}>
+                    <div className={`notes-bio-block ${formVisible ? 'notes-row-stagger-2' : 'row-hidden'}`}>
                       <p className="notes-bio-text">
                         {profileData.bio}
                       </p>
-                    </div>
-
-                    <div className={`notes-footer-doodle font-handwriting ${formVisible ? 'notes-row-stagger-4' : 'row-hidden'}`}>
-                      — Keep learning, keep building with purpose ✨
                     </div>
                   </div>
                 </div>
