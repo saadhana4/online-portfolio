@@ -625,7 +625,7 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                       className="mail-send-btn"
                       aria-label="Send email via mail application"
                     >
-                      {isSent ? 'Sent ✓' : 'Send'}
+                      {isSent ? 'Sent' : 'Send'}
                     </button>
                   </div>
 
@@ -704,7 +704,7 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         className="mail-textarea"
-                        rows={4}
+                        rows={3}
                         required
                       />
                     </div>
@@ -716,11 +716,11 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                         className={`mail-primary-send-btn font-handwriting ${isSent ? 'is-sent' : ''}`}
                         aria-label="Send message"
                       >
-                        {isSent ? 'Sent ✨' : 'Send message ✉'}
+                        {isSent ? 'Sent' : 'Send message ✉'}
                       </button>
                       {isSent && (
                         <div className="mail-sent-feedback font-handwriting" role="status" aria-live="polite">
-                          looking forward to connect ✨
+                          looking forward to connect :)
                         </div>
                       )}
                     </div>

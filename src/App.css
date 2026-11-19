@@ -1693,9 +1693,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 8px 12px 16px 12px;
+  padding: 8px 12px 10px 12px;
   overflow-y: auto;
-  gap: 6px;
+  gap: 5px;
 }
 
 .mail-input-row {
@@ -1774,14 +1774,13 @@
 }
 
 .mail-body-row {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 60px;
 }
 
 .mail-textarea {
-  flex: 1;
+  height: 62px;
+  min-height: 48px;
   border: 1px solid var(--base-250, #e2dcd2);
   border-radius: 8px;
   padding: 8px;
@@ -1801,9 +1800,10 @@
 .mail-submit-row {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   padding-top: 2px;
-  gap: 4px;
+  gap: 3px;
+  flex-shrink: 0;
 }
 
 .mail-primary-send-btn {
@@ -1833,7 +1833,9 @@
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--accent);
-  text-align: right;
+  text-align: center;
+  width: 100%;
+  white-space: nowrap;
   line-height: 1.25;
   animation: sentFeedbackFadeIn 250ms ease forwards;
 }
