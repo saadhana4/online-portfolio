@@ -33,6 +33,11 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
   const activeAnimationRef = useRef<Animation | null>(null);
   const hasMountedZoomRef = useRef<boolean>(false);
 
+  const [renderedView, setRenderedView] = useState<'about' | 'contact'>(view);
+  const [flipPhase, setFlipPhase] = useState<'idle' | 'out' | 'in'>('idle');
+  const [flipDirection, setFlipDirection] = useState<'forward' | 'backward'>('forward');
+  const prevViewRef = useRef<'about' | 'contact'>(view);
+
   const [isReducedMotion] = useState<boolean>(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
       return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -261,15 +266,47 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
     };
   }, [isDirectLoad, dims]);
 
-  // Focus fromInput when switching to contact view while already open
+  // 3D Screen Flip Transition when toggling between About & Contact while open
   useEffect(() => {
-    if (isZoomed && view === 'contact') {
+    if (view === prevViewRef.current) return;
+    const direction = view === 'contact' ? 'forward' : 'backward';
+    prevViewRef.current = view;
+
+    // If reduced motion is requested, phone isn't zoomed yet, or modal is closing: switch instantly
+    if (!isZoomed || isReducedMotion || closePhase) {
+      setRenderedView(view);
+      setFlipPhase('idle');
+      return;
+    }
+
+    // Step 1: Flip out to edge-on (90 deg)
+    setFlipDirection(direction);
+    setFlipPhase('out');
+
+    const swapTimer = setTimeout(() => {
+      // Step 2: Swap inner screen content and flip in from 90 deg to 0 deg
+      setRenderedView(view);
+      setFlipPhase('in');
+
+      const finishTimer = setTimeout(() => {
+        setFlipPhase('idle');
+      }, 170);
+
+      return () => clearTimeout(finishTimer);
+    }, 160);
+
+    return () => clearTimeout(swapTimer);
+  }, [view, isZoomed, isReducedMotion, closePhase]);
+
+  // Focus fromInput when switching to contact view
+  useEffect(() => {
+    if (isZoomed && renderedView === 'contact' && flipPhase !== 'out') {
       const timer = setTimeout(() => {
         fromInputRef.current?.focus({ preventScroll: true });
-      }, 60);
+      }, 180);
       return () => clearTimeout(timer);
     }
-  }, [view, isZoomed]);
+  }, [renderedView, isZoomed, flipPhase]);
 
   // Clean up body dimming class on unmount
   useEffect(() => {
@@ -497,11 +534,25 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
           >
             {/* Opaque Light Screen Layer that turns on 100ms after zoom */}
             <div className={`phone-screen-light-layer ${screenOn ? 'layer-on' : 'layer-off'}`}>
-              {/* ==========================================================
-                  VIEW 1: ABOUT (Notes Screen)
-                 ========================================================== */}
-              {view === 'about' ? (
-                <div className="notes-app-screen">
+              {/* 3D Flippable Inner Screen */}
+              <div
+                className={`phone-screen-flip-inner ${
+                  flipPhase === 'out'
+                    ? flipDirection === 'forward'
+                      ? 'screen-flip-out-forward'
+                      : 'screen-flip-out-backward'
+                    : flipPhase === 'in'
+                    ? flipDirection === 'forward'
+                      ? 'screen-flip-in-forward'
+                      : 'screen-flip-in-backward'
+                    : ''
+                }`}
+              >
+                {/* ==========================================================
+                    VIEW 1: ABOUT (Notes Screen)
+                   ========================================================== */}
+                {renderedView === 'about' ? (
+                  <div className="notes-app-screen">
                   {/* Notes Header */}
                   <div className={`notes-app-header ${formVisible ? 'header-visible' : 'header-hidden'}`}>
                     <span className="notes-app-title">Notes</span>
@@ -656,6 +707,7 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                   </form>
                 </div>
               )}
+              </div>
             </div>
           </div>
         </div>
