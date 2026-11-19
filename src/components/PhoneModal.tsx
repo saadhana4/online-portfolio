@@ -515,11 +515,11 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                       Today, 4:20 PM • Personal Notes
                     </div>
 
-                    {/* Photo Slot: Polaroid Placeholder */}
+                    {/* Photo Slot: Polaroid with User Photo */}
                     <div className={`notes-photo-slot ${formVisible ? 'notes-row-stagger-2' : 'row-hidden'}`}>
                       <img
                         src="/avatar-placeholder.svg"
-                        alt="Hand-drawn portrait illustration of Saadhana Karthikeyan"
+                        alt="Portrait photo of Saadhana Karthikeyan"
                         width={140}
                         height={168}
                         className="notes-avatar-img"
@@ -527,42 +527,11 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                       />
                     </div>
 
-                    {/* Profile Fields List */}
-                    <div className={`notes-fields-list ${formVisible ? 'notes-row-stagger-3' : 'row-hidden'}`}>
-                      <div className="notes-field-row">
-                        <span className="field-label">Name:</span>
-                        <span className="field-value">{profileData.name}</span>
-                      </div>
-
-                      <div className="notes-field-row">
-                        <span className="field-label">Studying:</span>
-                        <span className="field-value">{profileData.studying}</span>
-                      </div>
-
-                      <div className="notes-field-row">
-                        <span className="field-label">Good at:</span>
-                        <span className="field-value">{profileData.goodAt}</span>
-                      </div>
-
-                      <div className="notes-field-row">
-                        <span className="field-label">Lately building:</span>
-                        <span className="field-value">{profileData.latelyBuilding}</span>
-                      </div>
-
-                      <div className="notes-field-row">
-                        <span className="field-label">Interested in:</span>
-                        <span className="field-value">{profileData.interestedIn}</span>
-                      </div>
-
-                      <div className="notes-field-row">
-                        <span className="field-label">Languages:</span>
-                        <span className="field-value">{profileData.languages}</span>
-                      </div>
-
-                      <div className="notes-field-row">
-                        <span className="field-label">Based in:</span>
-                        <span className="field-value">{profileData.basedIn}</span>
-                      </div>
+                    {/* Bio Statement */}
+                    <div className={`notes-bio-block ${formVisible ? 'notes-row-stagger-3' : 'row-hidden'}`}>
+                      <p className="notes-bio-text">
+                        {profileData.bio}
+                      </p>
                     </div>
 
                     <div className={`notes-footer-doodle font-handwriting ${formVisible ? 'notes-row-stagger-4' : 'row-hidden'}`}>

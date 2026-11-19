@@ -1807,14 +1807,27 @@
 .notes-photo-slot {
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .notes-avatar-img {
   max-width: 130px;
   height: auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+}
+
+.notes-bio-block {
+  margin: 6px 2px 10px 2px;
+}
+
+.notes-bio-text {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 450;
+  color: var(--base-400);
+  line-height: 1.5;
+  text-align: left;
+  margin: 0;
 }
 
 .notes-fields-list {

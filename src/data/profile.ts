@@ -1,5 +1,6 @@
 export interface ProfileInfo {
   name: string;
+  bio: string;
   studying: string;
   goodAt: string;
   latelyBuilding: string;
@@ -14,6 +15,7 @@ export interface ProfileInfo {
 
 export const profileData: ProfileInfo = {
   name: 'Saadhana Karthikeyan',
+  bio: "I'm a Computer Science and Engineering student passionate about building technology-driven solutions and exploring the possibilities of AI. I enjoy working on innovative projects, experimenting with emerging technologies, and turning ideas into practical applications. Always curious, constantly learning, and driven to create meaningful impact through technology.",
   studying: 'M.Tech CSE (Integrated), SKCET Coimbatore',
   goodAt: 'computer vision, backend APIs, full-stack apps',
   latelyBuilding: 'healthcare tech and AI-powered apps',
