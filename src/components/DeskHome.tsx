@@ -275,24 +275,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
       }
     }
 
-    // 2. Scroll-driven word (only while in home mode and not loading)
-    if (a < 0.5 && !isLoadingRef.current) {
-      let nextWord: HeroWord = 'sees';
-      if (normP >= 0.62) {
-        nextWord = 'maps';
-      } else if (normP >= 0.22) {
-        nextWord = 'cares';
-      } else {
-        nextWord = 'sees';
-      }
-
-      if (activeWordRef.current !== nextWord) {
-        activeWordRef.current = nextWord;
-        setCurrentWord(nextWord);
-      }
-    }
-
-    // 3. Desk Objects (blended transforms)
+    // 2. Desk Objects (blended transforms)
     for (const obj of deskObjects) {
       if (isMob && !obj.showOnMobile) continue;
 

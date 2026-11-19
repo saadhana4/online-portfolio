@@ -3,7 +3,7 @@ import { forwardRef } from 'react';
 export type HeroWord = 'sees' | 'cares' | 'maps';
 
 interface HeroLineProps {
-  currentWord: HeroWord;
+  currentWord?: HeroWord;
   isAway?: boolean;
   isFadingIn?: boolean;
   isPhoneOpen?: boolean;
@@ -14,7 +14,6 @@ interface HeroLineProps {
 export const HeroLine = forwardRef<HTMLDivElement, HeroLineProps>(
   (
     {
-      currentWord,
       isAway = false,
       isFadingIn = false,
       isPhoneOpen = false,
@@ -36,27 +35,25 @@ export const HeroLine = forwardRef<HTMLDivElement, HeroLineProps>(
       >
         {isPhoneOpen ? (
           <p className="hero-single-line" aria-hidden="true">
-            <span className="hero-lead-text">Hey, I'm Saadhana and I build software that</span>{' '}
+            <span className="hero-lead-text">Hey, I'm Saadhana and I engineer ideas into</span>{' '}
             <span className="hero-word-slot">
               <span
-                key={currentWord}
-                className="hero-cycling-word font-handwriting word-swap-fade"
+                className="hero-cycling-word font-handwriting"
                 aria-hidden="true"
               >
-                {currentWord}
+                impact.
               </span>
             </span>
           </p>
         ) : (
           <h1 className="hero-single-line">
-            <span className="hero-lead-text">Hey, I'm Saadhana and I build software that</span>{' '}
+            <span className="hero-lead-text">Hey, I'm Saadhana and I engineer ideas into</span>{' '}
             <span className="hero-word-slot">
               <span
-                key={currentWord}
-                className="hero-cycling-word font-handwriting word-swap-fade"
+                className="hero-cycling-word font-handwriting"
                 aria-hidden="true"
               >
-                {currentWord}
+                impact.
               </span>
             </span>
           </h1>
@@ -64,7 +61,7 @@ export const HeroLine = forwardRef<HTMLDivElement, HeroLineProps>(
 
         {/* Visually-hidden sentence for screen readers */}
         <p className="sr-only">
-          I build software that sees, cares and maps.
+          Hey, I'm Saadhana and I engineer ideas into impact.
         </p>
         {/* Accessible subtitle for screen readers and SEO (not visible on page) */}
         <p className="sr-only">

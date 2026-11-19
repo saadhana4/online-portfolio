@@ -22,9 +22,8 @@ Built with **React 19**, **TypeScript**, **Vite**, and plain **CSS (CSS variable
   - Desk objects: **Laptop**, **Notebook**, **Pencil**, **Sticky Notes**, **Coffee Cup**, **Webcam**, **Headphones**, and **Potted Plant**.
   - Configurable via `src/data/deskObjects.ts`.
 - **Hero Banner**:
-  - *"Hey, I'm Saadhana and I build software that [word]"*
-  - The handwritten word cycles smoothly between: **sees** / **cares** / **maps**.
-  - Automatically freezes to static *"sees"* when `prefers-reduced-motion` is detected.
+  - *"Hey, I'm Saadhana and I engineer ideas into impact."*
+  - Features signature handwritten terracotta typography accentuating *"impact."*.
 - **Doodle Mascot**:
   - Tiny hand-drawn laptop-with-eyes character (`byte 🌱`) at bottom-left that responds to clicks and keypresses with playful speech bubbles.
 
