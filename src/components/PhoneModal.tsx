@@ -463,13 +463,16 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [triggerClose]);
 
-  // Handle Contact Send action (mailto form)
+  // Handle Contact Send action (opens Gmail compose with pre-filled details)
   const handleSendMail = (e: React.FormEvent) => {
     e.preventDefault();
     const subject = `[${topic}] Portfolio Message${fromEmail ? ` from ${fromEmail}` : ''}`;
     const bodyContent = `${message}\n\n---\nSent from Portfolio Contact Screen\nFrom: ${fromEmail || 'Not specified'}`;
-    const mailtoUrl = `mailto:${profileData.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyContent)}`;
-    window.location.href = mailtoUrl;
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(profileData.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyContent)}`;
+    const win = window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+    if (!win) {
+      window.location.href = gmailUrl;
+    }
   };
 
   const handleCopyEmail = () => {
