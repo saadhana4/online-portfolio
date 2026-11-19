@@ -39,8 +39,8 @@ export const projects: Project[] = [
     summary:
       'Touchless calculator using real-time hand tracking and gesture recognition: gesture-controlled arithmetic, dynamic theme switching, finger-landmark detection.',
     tags: ['MediaPipe', 'OpenCV', 'Computer Vision', 'Python', 'Gesture Recognition'],
-    image: '/projects/calculator.svg',
-    alt: 'AI Virtual Calculator with MediaPipe hand tracking landmark visual',
+    image: '/projects/calculator.png',
+    alt: 'AI Virtual Calculator air-gesture interface with MediaPipe hand landmark tracking and virtual keypad',
     highlight: 'Touchless Air-Gesture Math & Vision',
   },
   {
@@ -72,8 +72,8 @@ export const projects: Project[] = [
     summary:
       'Interactive sales dashboard, data prep and visualization.',
     tags: ['Power BI', 'DAX', 'Data Preparation', 'Business Analytics', 'Data Viz'],
-    image: '/projects/powerbi.svg',
-    alt: 'Power BI business sales dashboard with monthly trajectory and KPI metrics',
+    image: '/projects/powerbi.png',
+    alt: 'Power BI business sales dashboard with multi-year trends, KPI metrics, geographic maps, and regional breakdowns',
     highlight: 'Interactive KPI Modeling & Visuals',
   },
 ];
