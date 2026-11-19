@@ -716,11 +716,11 @@ export const PhoneModal: React.FC<PhoneModalProps> = ({
                         className={`mail-primary-send-btn font-handwriting ${isSent ? 'is-sent' : ''}`}
                         aria-label="Send message"
                       >
-                        {isSent ? 'Opening Gmail... ✨' : 'Send message ✉'}
+                        {isSent ? 'Sent ✨' : 'Send message ✉'}
                       </button>
                       {isSent && (
                         <div className="mail-sent-feedback font-handwriting" role="status" aria-live="polite">
-                          Opening Gmail in a new tab — looking forward to your message! ✨
+                          looking forward to connect ✨
                         </div>
                       )}
                     </div>
