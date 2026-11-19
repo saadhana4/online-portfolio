@@ -17,8 +17,8 @@ export const projects: Project[] = [
     summary:
       'Passcode-based shared access for elderly users, caretakers and family; medication schedules, adherence tracking, doctor appointments, email reminders for missed or upcoming doses. FastAPI. Scored 96.64 in the AI code evaluation.',
     tags: ['FastAPI', 'Python', 'Elderly Care', 'Adherence Tracking', 'Email Reminders'],
-    image: '/projects/carenest.svg',
-    alt: 'CareNest medication schedule and care management platform card',
+    image: '/projects/carenest.png',
+    alt: 'CareNest elderly care and medication management dashboard interface',
     highlight: 'PromptWars x Catalyst Hackathon • 96.64 AI Score',
   },
   {
