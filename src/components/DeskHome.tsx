@@ -9,6 +9,7 @@ import {
 import { HeroLine, type HeroWord } from './HeroLine';
 import { StickMan } from './StickMan';
 import { computeDeskObjectEngineState, type DeskObjectEngineState } from '../data/phoneEngine';
+import { getHasCompletedInitialLoad, setHasCompletedInitialLoad } from '../data/loaderState';
 
 interface Spark {
   id: number;
@@ -38,12 +39,31 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
     return false;
   });
 
+  // Loading Sequence State
+  const initialShouldLoad =
+    typeof window !== 'undefined' && !getHasCompletedInitialLoad() && currentRoute === '';
+  const [isLoading, setIsLoading] = useState<boolean>(initialShouldLoad);
+  const [loadingProgress, setLoadingProgress] = useState<number>(initialShouldLoad ? 0 : 1);
+  const [isSequenceEnding, setIsSequenceEnding] = useState<boolean>(false);
+  const [isLoadingHeroRevealed, setIsLoadingHeroRevealed] = useState<boolean>(!initialShouldLoad);
+  const [revealedObjectIds, setRevealedObjectIds] = useState<Set<string>>(() => {
+    if (!initialShouldLoad) {
+      return new Set(deskObjects.map((o) => o.id));
+    }
+    return new Set<string>();
+  });
+
+  const isLoadingRef = useRef<boolean>(isLoading);
   const [currentWord, setCurrentWord] = useState<HeroWord>('sees');
   const [hasInteracted, setHasInteracted] = useState<boolean>(false);
   const [sparks, setSparks] = useState<Spark[]>([]);
 
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+  }, [isLoading]);
+
   // Hero line visibility states for fade-out and fade-in
-  const [heroIsAway, setHeroIsAway] = useState<boolean>(shouldBeAway);
+  const heroIsAway = shouldBeAway;
   const [heroIsFadingIn, setHeroIsFadingIn] = useState<boolean>(false);
   const heroIsAwayRef = useRef<boolean>(shouldBeAway);
   const heroIsFadingInRef = useRef<boolean>(false);
@@ -70,10 +90,159 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
   const isMobileRef = useRef<boolean>(isMobile);
   const hasInteractedRef = useRef<boolean>(false);
 
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+  }, [isLoading]);
+
   const cachedStageSize = useRef<{ width: number; height: number }>({
     width: 1366,
     height: 642,
   });
+
+  const checkReducedMotion = useCallback(() => {
+    const reduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    reducedMotionRef.current = !!reduced;
+    return !!reduced;
+  }, []);
+
+  // Real Asset Loading & Staggered Reveal Sequence
+  useEffect(() => {
+    if (!initialShouldLoad) {
+      setHasCompletedInitialLoad(true);
+      return;
+    }
+
+    let isCancelled = false;
+    const startTime = performance.now();
+    const isReduced = checkReducedMotion();
+    const minDuration = isReduced ? 600 : 1200;
+    const maxDuration = 4000;
+
+    const visible = deskObjects.filter((obj) => (isMobileRef.current ? obj.showOnMobile : true));
+
+    // Staggered reveal order: notebook, pencil, then the rest
+    const preferredOrder = [
+      'notebook',
+      'pencil',
+      'webcam',
+      'headphones',
+      'sticky-notes',
+      'tape-roll',
+      'plant',
+      'coffee-cup',
+      'laptop',
+      'sd-cards',
+      'ruler',
+      'scissors',
+    ];
+    const orderedIds = [
+      ...preferredOrder.filter((id) => visible.some((o) => o.id === id)),
+      ...visible.filter((o) => !preferredOrder.includes(o.id)).map((o) => o.id),
+    ];
+
+    const decodedSet = new Set<string>();
+    let loadedItemsCount = 0;
+    const totalItems = 1 + visible.length; // 1 for fonts + 1 per image
+
+    const updateProgress = () => {
+      const p = Math.min(1, loadedItemsCount / totalItems);
+      setLoadingProgress(p);
+    };
+
+    // 1. Fonts ready
+    if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+      document.fonts.ready
+        .catch(() => {})
+        .then(() => {
+          if (isCancelled) return;
+          loadedItemsCount++;
+          updateProgress();
+        });
+    } else {
+      loadedItemsCount++;
+      updateProgress();
+    }
+
+    // 2. Decode visible images
+    visible.forEach((obj) => {
+      const img = new Image();
+      img.src = obj.src;
+      img
+        .decode()
+        .catch(() => {})
+        .then(() => {
+          if (isCancelled) return;
+          decodedSet.add(obj.id);
+          loadedItemsCount++;
+          updateProgress();
+        });
+    });
+
+    let revealIndex = 0;
+    let finishTriggered = false;
+
+    const triggerFinish = () => {
+      if (finishTriggered || isCancelled) return;
+      finishTriggered = true;
+
+      // Reveal all remaining objects
+      setRevealedObjectIds(new Set(orderedIds));
+      setLoadingProgress(1);
+
+      // Hero line fades in (400ms, with word 'sees')
+      activeWordRef.current = 'sees';
+      setCurrentWord('sees');
+      setIsLoadingHeroRevealed(true);
+
+      // Trigger stickman return
+      setIsSequenceEnding(true);
+    };
+
+    // Stagger loop: every 70ms, reveal next decoded object
+    const staggerInterval = window.setInterval(() => {
+      if (isCancelled || finishTriggered) return;
+
+      const elapsed = performance.now() - startTime;
+
+      // 4s timeout fallback: reveal everything regardless
+      if (elapsed >= maxDuration) {
+        window.clearInterval(staggerInterval);
+        triggerFinish();
+        return;
+      }
+
+      if (revealIndex < orderedIds.length) {
+        const nextId = orderedIds[revealIndex];
+        if (decodedSet.has(nextId) || elapsed > 2000) {
+          setRevealedObjectIds((prev) => new Set([...prev, nextId]));
+          revealIndex++;
+        }
+      }
+
+      const allRevealed = revealIndex >= orderedIds.length;
+      const allLoaded = loadedItemsCount >= totalItems;
+      if (allRevealed && allLoaded && elapsed >= minDuration) {
+        window.clearInterval(staggerInterval);
+        triggerFinish();
+      }
+    }, 70);
+
+    return () => {
+      isCancelled = true;
+      window.clearInterval(staggerInterval);
+    };
+  }, [initialShouldLoad, checkReducedMotion]);
+
+  // Called when stickman completes walking back to home spot
+  const handleSequenceComplete = useCallback(() => {
+    setIsLoading(false);
+    setHasCompletedInitialLoad(true);
+    targetRef.current = 0;
+    currentRef.current = 0;
+  }, []);
 
   // Toggle will-change on animated elements
   const setWillChange = (active: boolean) => {
@@ -106,8 +275,8 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
       }
     }
 
-    // 2. Scroll-driven word (only while in home mode)
-    if (a < 0.5) {
+    // 2. Scroll-driven word (only while in home mode and not loading)
+    if (a < 0.5 && !isLoadingRef.current) {
       let nextWord: HeroWord = 'sees';
       if (normP >= 0.62) {
         nextWord = 'maps';
@@ -174,8 +343,8 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
         currentA = targetA;
       }
 
-      // B) Scroll progress p easing (only when near home a < 0.05)
-      if (currentA < 0.05) {
+      // B) Scroll progress p easing (only when near home a < 0.05 and not loading)
+      if (currentA < 0.05 && !isLoadingRef.current) {
         currentP += (targetP - currentP) * (1 - Math.exp(-dt * 6));
 
         while (targetP >= 1) {
@@ -211,7 +380,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
   );
 
   const startLoop = useCallback(() => {
-    if (reducedMotionRef.current) return;
+    if (reducedMotionRef.current || isLoadingRef.current) return;
     if (!isLoopRunningRef.current) {
       isLoopRunningRef.current = true;
       setWillChange(true);
@@ -224,7 +393,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
 
   // Handle route and mode transitions (home <-> away)
   useEffect(() => {
-    const isReduced = reducedMotionRef.current;
+    const isReduced = checkReducedMotion();
 
     if (isFirstMountRef.current) {
       isFirstMountRef.current = false;
@@ -247,28 +416,22 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
       if (isReduced) {
         blendARef.current = 1;
         heroIsAwayRef.current = true;
-        setHeroIsAway(true);
         heroIsFadingInRef.current = false;
-        setHeroIsFadingIn(false);
         renderFrame(0, 1, true);
         return;
       }
 
       heroIsAwayRef.current = true;
-      setHeroIsAway(true);
       heroIsFadingInRef.current = false;
-      setHeroIsFadingIn(false);
       startLoop();
     } else {
       // Transition back to home
-      // 4) TRANSITION BACK TO HOME: While objects at a=1, reset scroll progress p to 0
       targetRef.current = 0;
       currentRef.current = 0;
       targetARef.current = 0;
       isEnteringAwayRef.current = false;
       blendStartTimeRef.current = performance.now();
 
-      // Reset word to 'sees'
       activeWordRef.current = 'sees';
       requestAnimationFrame(() => {
         setCurrentWord('sees');
@@ -277,18 +440,16 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
       if (isReduced) {
         blendARef.current = 0;
         heroIsAwayRef.current = false;
-        setHeroIsAway(false);
         heroIsFadingInRef.current = false;
-        setHeroIsFadingIn(false);
         renderFrame(0, 0, false);
         return;
       }
 
-      // Fade hero back in: delayed by 400ms, duration 400ms
       heroIsAwayRef.current = false;
-      setHeroIsAway(false);
       heroIsFadingInRef.current = true;
-      setHeroIsFadingIn(true);
+      requestAnimationFrame(() => {
+        setHeroIsFadingIn(true);
+      });
       const timer = window.setTimeout(() => {
         heroIsFadingInRef.current = false;
         setHeroIsFadingIn(false);
@@ -300,10 +461,10 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
         window.clearTimeout(timer);
       };
     }
-  }, [shouldBeAway, renderFrame, startLoop]);
+  }, [shouldBeAway, renderFrame, startLoop, checkReducedMotion]);
 
   const triggerInteraction = () => {
-    if (!hasInteractedRef.current) {
+    if (!hasInteractedRef.current && !isLoadingRef.current) {
       hasInteractedRef.current = true;
       setHasInteracted(true);
     }
@@ -311,14 +472,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
 
   // Setup loop, resize and input event listeners
   useEffect(() => {
-    const checkMotion = () => {
-      const reduced = typeof window !== 'undefined' && window.matchMedia
-        ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        : false;
-      reducedMotionRef.current = reduced;
-      return reduced;
-    };
-    const isReduced = checkMotion();
+    const isReduced = checkReducedMotion();
 
     const updateDimensions = () => {
       if (stageRef.current) {
@@ -379,8 +533,8 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
     const stageEl = stageRef.current;
     if (stageEl && !isReduced) {
       const handleWheel = (e: WheelEvent) => {
-        // Listeners only active in home mode
-        if (reducedMotionRef.current || blendARef.current > 0.01) return;
+        // Ignore input during loading or when not in home mode
+        if (reducedMotionRef.current || blendARef.current > 0.01 || isLoadingRef.current) return;
         e.preventDefault();
         triggerInteraction();
 
@@ -398,14 +552,14 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
 
       let lastTouchY = 0;
       const handleTouchStart = (e: TouchEvent) => {
-        if (reducedMotionRef.current || blendARef.current > 0.01) return;
+        if (reducedMotionRef.current || blendARef.current > 0.01 || isLoadingRef.current) return;
         if (e.touches.length > 0) {
           lastTouchY = e.touches[0].clientY;
         }
       };
 
       const handleTouchMove = (e: TouchEvent) => {
-        if (reducedMotionRef.current || blendARef.current > 0.01) return;
+        if (reducedMotionRef.current || blendARef.current > 0.01 || isLoadingRef.current) return;
         if (e.touches.length > 0) {
           e.preventDefault();
           const currentY = e.touches[0].clientY;
@@ -420,7 +574,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
       };
 
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (reducedMotionRef.current || blendARef.current > 0.01) return;
+        if (reducedMotionRef.current || blendARef.current > 0.01 || isLoadingRef.current) return;
 
         const k = e.key.toLowerCase();
         // Stickman controls must NEVER drift desk objects
@@ -436,7 +590,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
             active.tagName === 'SELECT' ||
             active.tagName === 'BUTTON' ||
             active.tagName === 'A' ||
-            active.closest('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), nav, #mobile-nav-menu'))
+            active.closest('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), nav, #mobile-nav-panel'))
         ) {
           return;
         }
@@ -487,12 +641,11 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
       }
       setWillChange(false);
     };
-  }, [renderFrame, startLoop]);
+  }, [renderFrame, startLoop, checkReducedMotion]);
 
   const prevPhoneOpenRef = useRef<boolean>(isPhoneOpen);
   useEffect(() => {
     if (prevPhoneOpenRef.current && !isPhoneOpen) {
-      // Return desk to resting layout
       targetRef.current = 0;
       currentRef.current = 0;
       startLoop();
@@ -503,8 +656,8 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
   const visibleObjects = deskObjects.filter((obj) => (isMobile ? obj.showOnMobile : true));
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Only spawn sparks in home mode on non-interactive regions when phone is not open
-    if (blendARef.current > 0.05 || isPhoneOpen) return;
+    // Only spawn sparks in home mode on non-interactive regions when phone is not open and not loading
+    if (blendARef.current > 0.05 || isPhoneOpen || isLoadingRef.current) return;
 
     const target = e.target as HTMLElement | null;
     if (target && target.closest('a, button, nav, input, select, textarea')) {
@@ -535,12 +688,17 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
   return (
     <section
       ref={stageRef}
-      className={`desk-surface-stage ${shouldBeAway ? 'mode-away' : 'mode-home'} ${isPhoneOpen ? 'phone-is-open' : ''}`}
+      className={`desk-surface-stage ${shouldBeAway ? 'mode-away' : 'mode-home'} ${isPhoneOpen ? 'phone-is-open' : ''} ${isLoading ? 'is-stage-loading' : ''}`}
       aria-label="Interactive scrapbook desk workspace"
       inert={isPhoneOpen ? true : undefined}
       aria-hidden={isPhoneOpen ? true : undefined}
       onPointerDown={handlePointerDown}
     >
+      {/* Visually-hidden status announcement for screen readers */}
+      <div className="sr-only" role="status" aria-live="polite">
+        {isLoading ? 'Loading' : 'Page loaded'}
+      </div>
+
       {/* Centered Single-line Hero Message */}
       <HeroLine
         ref={heroRef}
@@ -548,6 +706,8 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
         isAway={heroIsAway}
         isFadingIn={heroIsFadingIn}
         isPhoneOpen={isPhoneOpen}
+        isLoading={isLoading}
+        isLoadingRevealed={isLoadingHeroRevealed}
       />
 
       {/* Scattered Desk Objects Layer: transforms only */}
@@ -569,13 +729,16 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
             zIndex: obj.zIndex || 2,
           };
 
+          const isRevealed = !isLoading || revealedObjectIds.has(obj.id);
+          const loaderClass = !isRevealed ? 'loader-hidden' : (isLoading ? 'loader-revealing' : '');
+
           return (
             <div
               key={obj.id}
               ref={(el) => {
                 objectRefs.current[obj.id] = el;
               }}
-              className={`desk-object-cutout desk-object-${obj.id} ${obj.src.endsWith('.webp') ? 'is-photo' : ''} ${isRuler && isPhoneOpen ? 'desk-phone-hidden' : ''}`}
+              className={`desk-object-cutout desk-object-${obj.id} ${obj.src.endsWith('.webp') ? 'is-photo' : ''} ${isRuler && isPhoneOpen ? 'desk-phone-hidden' : ''} ${loaderClass}`}
               style={style}
               aria-hidden="true"
             >
@@ -592,12 +755,18 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
         })}
       </div>
 
-      {/* Doodle Stickman Character Layer (Controlled via W, A, S, D) */}
-      <StickMan isAway={shouldBeAway || isPhoneOpen} />
+      {/* Doodle Stickman Character Layer */}
+      <StickMan
+        isAway={shouldBeAway || isPhoneOpen}
+        isLoading={isLoading}
+        loadingProgress={loadingProgress}
+        isSequenceEnding={isSequenceEnding}
+        onSequenceComplete={handleSequenceComplete}
+      />
 
-      {/* Handwritten scroll hint with doodle arrow (visible only in home mode) */}
+      {/* Handwritten scroll hint with doodle arrow (visible only in home mode and when not loading) */}
       <div
-        className={`desk-scroll-hint font-handwriting ${hasInteracted || shouldBeAway || isPhoneOpen ? 'is-faded' : ''}`}
+        className={`desk-scroll-hint font-handwriting ${hasInteracted || shouldBeAway || isPhoneOpen || isLoading ? 'is-faded' : ''}`}
         aria-hidden="true"
       >
         <span>scroll</span>
@@ -618,7 +787,7 @@ export const DeskHome: React.FC<DeskHomeProps> = ({
       </div>
 
       {/* Click Spark Burst Layer */}
-      <div className="burst-layer" aria-hidden="true" inert={isPhoneOpen ? true : undefined}>
+      <div className="burst-layer" aria-hidden="true" inert={isPhoneOpen || isLoading ? true : undefined}>
         {sparks.map((spark) => (
           <svg
             key={spark.id}

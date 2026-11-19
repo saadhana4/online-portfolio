@@ -4,6 +4,7 @@ import { DeskHome } from './components/DeskHome';
 import { WorkPage } from './components/WorkPage';
 import { JourneyPage } from './components/JourneyPage';
 import { PhoneModal } from './components/PhoneModal';
+import { setHasCompletedInitialLoad } from './data/loaderState';
 import './App.css';
 
 type RouteType = '' | 'work' | 'journey' | 'about' | 'contact';
@@ -21,7 +22,12 @@ const parseHash = (hash: string): RouteType => {
 export const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<RouteType>(() => {
     if (typeof window !== 'undefined') {
-      return parseHash(window.location.hash);
+      const initial = parseHash(window.location.hash);
+      if (initial !== '') {
+        // Direct load of non-home route skips loading sequence permanently for this session
+        setHasCompletedInitialLoad(true);
+      }
+      return initial;
     }
     return '';
   });

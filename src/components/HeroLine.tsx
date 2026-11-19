@@ -7,16 +7,28 @@ interface HeroLineProps {
   isAway?: boolean;
   isFadingIn?: boolean;
   isPhoneOpen?: boolean;
+  isLoading?: boolean;
+  isLoadingRevealed?: boolean;
 }
 
 export const HeroLine = forwardRef<HTMLDivElement, HeroLineProps>(
-  ({ currentWord, isAway = false, isFadingIn = false, isPhoneOpen = false }, ref) => {
-    const isHiddenOrInert = isAway || isPhoneOpen;
+  (
+    {
+      currentWord,
+      isAway = false,
+      isFadingIn = false,
+      isPhoneOpen = false,
+      isLoading = false,
+      isLoadingRevealed = false,
+    },
+    ref
+  ) => {
+    const isHiddenOrInert = isAway || isPhoneOpen || (isLoading && !isLoadingRevealed);
 
     return (
       <div
         ref={ref}
-        className={`desk-hero-minimal ${isAway ? 'is-away' : ''} ${isFadingIn ? 'is-fading-in' : ''}`}
+        className={`desk-hero-minimal ${isAway ? 'is-away' : ''} ${isFadingIn ? 'is-fading-in' : ''} ${isLoading && !isLoadingRevealed ? 'is-loading' : ''} ${isLoadingRevealed ? 'is-loading-revealed' : ''}`}
         role="region"
         aria-label="Introduction hero"
         inert={isHiddenOrInert ? true : undefined}
