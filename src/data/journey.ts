@@ -25,13 +25,13 @@ export const journeySteps: JourneyStep[] = [
       {
         title: 'M.Tech CSE (Integrated)',
         description: 'Sri Krishna College of Engineering and Technology',
-        details: ['Expected graduation: 2029', 'Focus: Software Engineering, AI/ML, System Design'],
-        badge: 'Expected 2029',
+        details: ['Graduation: 2029', 'Focus: Software Engineering, AI/ML, System Design'],
+        badge: 'Graduation 2029',
       },
       {
         title: 'Higher Secondary',
         description: 'SSVM World School',
-        details: ['Graduated in 2024 with a strong focus on Mathematics and Computer Science'],
+        details: ['Graduated in 2024 with Computer Science'],
         badge: '2024',
       },
     ],
@@ -83,12 +83,6 @@ export const journeySteps: JourneyStep[] = [
     category: 'Campus',
     title: 'Leadership & Contributions',
     items: [
-      {
-        title: 'Official SKCET Website Redesign',
-        description: 'Institutional Web Development',
-        details: ['Contributed directly to the development and redesign of the official college web portal'],
-        badge: 'Developer',
-      },
       {
         title: 'Technical Event Coordination',
         description: 'Campus Technical Organization',
